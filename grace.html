@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="恩典島：60 則兒童聖經故事蓋成的 3D 玩具小城，含和合本金句、注音、人物索引與聖經時間軸。">
+<title>恩典島</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{color-scheme:light}
+body{margin:0;font:14px/1.5 system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<style>
+/* Layout: full-bleed 3D toy island city; UI floats on top as chunky "wooden block" cards — brand top-left, search top-right, story panel right, controls bottom-left. */
+:root{
+  --bg:#f7f2e8;
+  --card:#fffdf8;
+  --ink:#2c2a3a;
+  --ink-soft:#6c6779;
+  --edge:#2c2a3a;
+  --accent:#2f6fd1;
+  --sun:#f4bd3c;
+  --leaf:#4f9a5c;
+  --chip:#efe9dc;
+  --display:"LXGW WenKai TC","Kaiti TC","STKaiti","Noto Sans TC",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171a26;--card:#232736;--ink:#f2eee6;--ink-soft:#aaa6bb;--edge:#07080e;
+    --accent:#86b2ff;--sun:#f6c650;--leaf:#7fc58b;--chip:#2e3346;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171a26;--card:#232736;--ink:#f2eee6;--ink-soft:#aaa6bb;--edge:#07080e;
+  --accent:#86b2ff;--sun:#f6c650;--leaf:#7fc58b;--chip:#2e3346;color-scheme:dark;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.6}
+#sky{position:fixed;inset:0;z-index:0;transition:background 1.2s}
+#scene{position:fixed;inset:0;z-index:1;display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#scene.hovering{cursor:pointer}
+#labels{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.isl{position:absolute;left:0;top:0;pointer-events:auto;transform:translate(-50%,-100%);
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+  font-family:var(--display);font-weight:700;font-size:14px;line-height:1;
+  padding:6px 10px 6px 8px;border:2px solid var(--edge);border-radius:999px;
+  background:var(--card);color:var(--ink);box-shadow:2px 3px 0 var(--edge);cursor:pointer;
+  transition:opacity .4s, background .2s}
+.isl:hover,.isl:focus-visible{background:var(--sun);color:#2c2a3a;outline:none}
+.isl .dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--edge);flex:none}
+.isl small{font-family:var(--body);font-weight:500;font-size:11px;color:var(--ink-soft)}
+.isl:hover small{color:#2c2a3a}
+.isl.dim{opacity:.35}
+.isl.home{background:var(--sun);color:#2c2a3a}
+.isl.home small{color:#5a4a20}
+#tip{position:fixed;z-index:5;pointer-events:none;left:0;top:0;transform:translate(14px,14px);
+  background:var(--card);color:var(--ink);border:2px solid var(--edge);border-radius:10px;
+  padding:6px 10px;font-weight:700;box-shadow:2px 3px 0 var(--edge);max-width:240px}
+#tip small{display:block;font-weight:400;color:var(--ink-soft);font-size:12px}
+
+.ui{position:fixed;inset:0;z-index:3;pointer-events:none;display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-rows:auto minmax(0,1fr) auto auto;gap:12px;
+  padding-top:max(16px, env(safe-area-inset-top, 0px));padding-bottom:max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.ui>*{pointer-events:auto;min-width:0}
+.block{background:var(--card);border:2px solid var(--edge);border-radius:16px;box-shadow:3px 4px 0 var(--edge)}
+
+.brand{grid-column:1;grid-row:1;justify-self:start;align-self:start;display:flex;gap:12px;align-items:center;padding:10px 16px 10px 12px}
+.brand svg{flex:none}
+.brand h1{margin:0;font-family:var(--display);font-size:28px;line-height:1.05;letter-spacing:.06em}
+.brand p{margin:2px 0 0;color:var(--ink-soft);font-size:12px}
+.brand .clock{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700}
+
+.search{grid-column:2;grid-row:1;align-self:start;position:relative}
+.search label{position:absolute;left:-9999px}
+.search .field{display:flex;align-items:center;gap:8px;padding:8px 12px}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);outline:none;padding:4px 0}
+.search input::placeholder{color:var(--ink-soft)}
+.search .field:focus-within{box-shadow:3px 4px 0 var(--accent)}
+.results{position:absolute;left:0;right:0;top:calc(100% + 8px);max-height:50vh;overflow:auto;padding:6px;display:grid;gap:2px}
+.results button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:8px 10px;border-radius:10px}
+.results button:hover,.results button:focus-visible{background:var(--chip)}
+.results .n{grid-row:span 2;align-self:center}
+.results .t{font-weight:700}
+.results .s{font-size:12px;color:var(--ink-soft)}
+.results .empty{padding:10px;color:var(--ink-soft)}
+
+.panel{grid-column:2;grid-row:2;display:flex;flex-direction:column;overflow:hidden}
+.panel .scroll{overflow:auto;padding:18px 18px 20px;display:grid;gap:14px;align-content:start}
+.panel h2{margin:0;font-family:var(--display);font-size:24px;line-height:1.25;text-wrap:balance}
+.panel h3{margin:0;font-size:12px;letter-spacing:.12em;color:var(--ink-soft);font-weight:700}
+.panel p{margin:0}
+.eyebrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--ink-soft)}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:1px 9px;border-radius:999px;border:1.5px solid var(--edge);font-size:12px;font-weight:700;background:var(--chip);color:var(--ink)}
+.pill.ot{background:#f7dc93;color:#2c2a3a}
+.pill.nt{background:#bcd6ff;color:#2c2a3a}
+.back{all:unset;cursor:pointer;font-size:13px;font-weight:700;color:var(--accent);justify-self:start}
+.back:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.lede{color:var(--ink);font-size:15px;max-width:34em}
+.n{display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 4px;border-radius:9px;border:2px solid var(--edge);
+  font-family:var(--display);font-weight:700;font-size:14px;background:var(--sun);color:#2c2a3a;font-variant-numeric:tabular-nums}
+.n.nt{background:#bcd6ff}
+.list{display:grid;gap:8px}
+.item{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:start;
+  padding:10px 12px;border:2px solid var(--edge);border-radius:12px;background:var(--card);transition:transform .15s, box-shadow .15s}
+.item:hover,.item:focus-visible{transform:translate(-1px,-2px);box-shadow:2px 3px 0 var(--edge)}
+.item .n{grid-row:span 2}
+.item b{font-size:15px}
+.item span{font-size:12.5px;color:var(--ink-soft)}
+.today{background:linear-gradient(0deg,var(--card),var(--card));position:relative}
+.today::before{content:"今日故事";position:absolute;top:-10px;right:12px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  background:var(--accent);color:var(--card);padding:1px 8px;border-radius:999px;border:1.5px solid var(--edge)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;border:2px solid var(--edge);
+  font-weight:700;font-size:13px;background:var(--card);color:var(--ink);box-shadow:2px 2px 0 var(--edge)}
+.btn:hover{background:var(--chip)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);color:var(--card)}
+.links{display:grid;gap:8px}
+.link{all:unset;cursor:pointer;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--chip)}
+.link:hover,.link:focus-visible{outline:2px solid var(--sun)}
+.link svg{flex:none;margin-top:3px}
+.link b{display:block;font-size:13.5px}
+.link span{font-size:12.5px;color:var(--ink-soft)}
+.how{display:grid;gap:6px;padding:0;margin:0;list-style:none;font-size:13px;color:var(--ink-soft)}
+.how li{padding-left:14px;position:relative}
+.how li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:2px;background:var(--sun);border:1.5px solid var(--edge)}
+.how b{color:var(--ink)}
+.grid-isl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.grid-isl button{all:unset;cursor:pointer;padding:7px 10px;border-radius:10px;background:var(--chip);font-size:13px;display:flex;justify-content:space-between;gap:6px}
+.grid-isl button:hover,.grid-isl button:focus-visible{outline:2px solid var(--edge)}
+.grid-isl em{font-style:normal;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.foot{font-size:11.5px;color:var(--ink-soft);border-top:1.5px dashed var(--ink-soft);padding-top:10px}
+.foot a{color:var(--accent)}
+
+.controls{grid-column:1;grid-row:4;justify-self:start;align-self:end;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;max-width:100%}
+.seg{display:inline-flex;border:2px solid var(--edge);border-radius:10px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:5px 11px;font-weight:700;font-size:13px;color:var(--ink)}
+.seg button+button{border-left:2px solid var(--edge)}
+.seg button[aria-pressed="true"]{background:var(--sun);color:#2c2a3a}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-4px}
+.toggle[aria-pressed="true"]{background:var(--sun);color:#2c2a3a}
+.time{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.time input{width:130px;accent-color:var(--accent)}
+.time output{font-variant-numeric:tabular-nums;min-width:3.2em}
+.lambnote{font-size:12px;color:var(--ink-soft);max-width:220px}
+.handle{all:unset;display:none}
+
+.timeline{grid-column:1 / 3;grid-row:3;align-self:end;padding:10px 14px 12px;display:grid;gap:8px}
+.tl-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tl-head h3{margin:0;font-family:var(--display);font-size:16px;letter-spacing:.04em}
+.tl-now{font-size:13px;color:var(--ink-soft);min-width:0;flex:1}
+.tl-now b{color:var(--ink)}
+.tl-note{font-size:11px;color:var(--ink-soft)}
+.tl-scroll{overflow-x:auto;padding-bottom:2px}
+.tl-track{display:flex;gap:4px;min-width:100%;width:max-content}
+.era{flex:var(--n) 0 auto;min-width:max-content;border:1.5px solid var(--edge);border-radius:10px;background:var(--era);color:#2c2a3a;padding:4px 4px 6px;display:grid;gap:4px}
+.era>span{display:grid;font-size:12px;font-weight:700;line-height:1.25;white-space:nowrap;padding:0 4px;min-width:0}
+.era>span small{font-size:10.5px;font-weight:500;opacity:.78;font-variant-numeric:tabular-nums}
+.dots{display:flex;justify-content:space-around;align-items:center;gap:3px;height:22px;padding:0 2px}
+.dot{all:unset;cursor:pointer;width:10px;height:10px;border-radius:50%;background:#fffdf8;border:2px solid #2c2a3a;flex:none;transition:transform .15s}
+.dot:hover,.dot:focus-visible{transform:scale(1.35)}
+.dot:focus-visible{outline:2px solid #2f6fd1;outline-offset:2px}
+.dot.on{background:#2f6fd1;transform:scale(1.55)}
+.dot.is-today{background:#f4bd3c}
+.dot.on.is-today{background:#2f6fd1}
+.btn.playing{background:var(--sun);color:#2c2a3a}
+
+.ptools{display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:10px 14px 0}
+.ptools .btn{padding:4px 10px;font-size:12.5px}
+.ptools .btn[aria-pressed="true"]{background:var(--sun);color:#2c2a3a}
+.zc{display:inline-flex;align-items:center;vertical-align:middle;margin:0 .05em}
+.zb{display:inline-flex;align-items:center;font-family:var(--body);font-weight:500;font-size:clamp(10px,.46em,13px);line-height:1;margin-left:.1em;color:var(--ink)}
+.zs{display:inline-flex;flex-direction:column;align-items:center}
+.zs i,.zb .tn{font-style:normal;line-height:1.02}
+.zs .lt{line-height:.55}
+.zb .tn{margin-left:.06em}
+.panel.zy h2{font-size:25px;line-height:2.1}
+.panel.zy .lede{font-size:19px;line-height:2.25}
+.panel.zy .verse blockquote{font-size:20px;line-height:2.25}
+.people{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;border:1.5px solid var(--edge);border-radius:999px;background:var(--card);color:var(--ink);font-size:13px;font-weight:700}
+.pchip:hover,.pchip:focus-visible{background:var(--chip);box-shadow:2px 2px 0 var(--edge)}
+.pchip .av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);background:#f7dc93;color:#2c2a3a;border:1.5px solid var(--edge);font-size:13px}
+.pchip.nt .av{background:#bcd6ff}
+.pchip em{font-style:normal;font-weight:400;color:var(--ink-soft);font-size:11px;font-variant-numeric:tabular-nums}
+.dot.hit{box-shadow:0 0 0 3px #f4bd3c}
+.verse{margin:0;padding:14px 16px 12px;border-radius:14px;background:var(--chip);border:2px dashed var(--ink-soft);display:grid;gap:8px}
+.verse blockquote{margin:0;font-family:var(--display);font-size:18px;line-height:1.7;color:var(--ink)}
+.verse figcaption{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft)}
+.verse figcaption a{color:var(--accent);font-weight:700}
+.copy{all:unset;cursor:pointer;margin-left:auto;font-size:12px;font-weight:700;padding:3px 9px;border-radius:8px;border:1.5px solid var(--edge);background:var(--card);color:var(--ink)}
+.copy:focus-visible{outline:2px solid var(--accent)}
+.results .v{grid-column:2;font-size:12px;color:var(--ink);font-family:var(--display)}
+.results mark{background:var(--sun);color:#2c2a3a;border-radius:3px;padding:0 1px}
+
+@media (max-width:760px){
+  .ui{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr) auto auto;gap:8px}
+  .timeline{grid-row:5;grid-column:1;padding:8px 10px}
+  .tl-note{display:none}
+  .brand{grid-row:1;grid-column:1;padding:8px 12px}
+  .brand p{font-size:11px}
+  .brand h1{font-size:22px}
+  .search{grid-row:2;grid-column:1}
+  .controls{grid-row:3;grid-column:1;flex-wrap:nowrap;overflow-x:auto;justify-self:stretch;padding:8px 10px}
+  .controls>*{flex:none}
+  .lambnote{display:none}
+  .panel{grid-row:6;grid-column:1;max-height:36vh}
+  .panel.collapsed .scroll{display:none}
+  .handle{display:flex;cursor:pointer;justify-content:center;padding:6px 0 0}
+  .handle::before{content:"";width:44px;height:5px;border-radius:5px;background:var(--ink-soft)}
+  .isl{font-size:12px;padding:4px 8px 4px 6px}
+  .isl small{display:none}
+}
+@media (prefers-reduced-motion: reduce){ .item,.isl{transition:none} }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<canvas id="scene" aria-label="恩典島 3D 互動地圖：拖曳旋轉，滾輪縮放，點建築看故事"></canvas>
+<div id="labels"></div>
+<div id="tip" hidden></div>
+
+<div class="ui">
+  <header class="brand block">
+    <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+      <polygon points="22,3 38.5,12.5 38.5,31.5 22,41 5.5,31.5 5.5,12.5" fill="#8cc66d" stroke="#2c2a3a" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="19.5" y="11" width="5" height="22" rx="1.5" fill="#f4bd3c" stroke="#2c2a3a" stroke-width="2"/>
+      <rect x="13" y="17" width="18" height="5" rx="1.5" fill="#f4bd3c" stroke="#2c2a3a" stroke-width="2"/>
+    </svg>
+    <div>
+      <h1>恩典島</h1>
+      <p>60 則兒童聖經故事・15 座島 ・ 台北 <span class="clock" id="clock">--:--</span> <span id="period"></span></p>
+    </div>
+  </header>
+
+  <div class="search">
+    <div class="field block">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <label for="q">搜尋故事</label>
+      <input id="q" type="search" autocomplete="off" placeholder="找故事：大衛、方舟、禱告、饒恕…">
+    </div>
+    <div class="results block" id="results" hidden></div>
+  </div>
+
+  <aside class="panel block" id="panel" aria-live="polite">
+    <button class="handle" id="handle" aria-label="展開或收合故事面板"></button>
+    <div class="ptools">
+      <button class="btn" id="peopleBtn">人物</button>
+      <button class="btn" id="zyBtn" aria-pressed="false" aria-label="顯示注音">ㄅㄆㄇ 注音</button>
+    </div>
+    <div class="scroll" id="panelBody"></div>
+  </aside>
+
+  <section class="timeline block" aria-label="聖經時間軸">
+    <div class="tl-head">
+      <h3>聖經時間軸</h3>
+      <button class="btn" id="playBtn" aria-pressed="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path id="playIcon" d="M7 4l13 8-13 8z" fill="currentColor"/></svg>
+        <span id="playLabel">依年代播放</span>
+      </button>
+      <span class="tl-now" id="tlNow">點一個圓點，跳到那個年代的故事</span>
+      <span class="tl-note">年代為傳統估算，部分年代學界看法不一</span>
+    </div>
+    <div class="tl-scroll" id="tlScroll"><div class="tl-track" id="tlTrack"></div></div>
+  </section>
+
+  <div class="controls block">
+    <div class="seg" role="group" aria-label="篩選聖經">
+      <button id="f-all" aria-pressed="true">全部</button>
+      <button id="f-ot" aria-pressed="false">舊約</button>
+      <button id="f-nt" aria-pressed="false">新約</button>
+    </div>
+    <button class="btn toggle" id="graceBtn" aria-pressed="false">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18C6 6 18 6 21 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="3" cy="18" r="2" fill="currentColor"/><circle cx="21" cy="18" r="2" fill="currentColor"/></svg>
+      恩典線
+    </button>
+    <button class="btn" id="lambBtn">
+      <svg width="18" height="16" viewBox="0 0 26 22" aria-hidden="true"><ellipse cx="12" cy="11" rx="9" ry="7" fill="#fff" stroke="currentColor" stroke-width="2"/><circle cx="21" cy="8" r="3.4" fill="currentColor"/><path d="M7 17v4M16 17v4" stroke="currentColor" stroke-width="2"/></svg>
+      找小羊
+    </button>
+    <div class="time">
+      <label for="hour">時光</label>
+      <input id="hour" type="range" min="0" max="24" step="0.25" value="12">
+      <output id="hourOut" for="hour">即時</output>
+      <button class="btn" id="nowBtn" hidden>回到現在</button>
+    </div>
+    <span class="lambnote" id="lambNote">小羊正在島上散步…</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------------- 資料：60 則故事（標題、經文出處取自兒童聖經故事網站；摘要為本站改寫） ---------------- */
+const S = [
+ [1,"上帝創造萬物","01_When_God_Made_Everything","Gen/1","創世記 1–2 章","tree","神用六天造出光、天地、海洋、動物和人，第七天安息。一切都很美好。"],
+ [2,"人類悲傷的開始","02_The_Start_of_Mans_Sadness","Gen/3","創世記 3–6 章","apple","亞當和夏娃沒有聽神的話，離開了伊甸園；但神早已預備拯救的應許。"],
+ [3,"洪水泛濫","03_Noah_and_the_Great_Flood","Gen/6","創世記 6–10 章","ark","挪亞照著神的吩咐造方舟。大水退去後，天上出現彩虹，是神立約的記號。"],
+ [4,"上帝對亞伯拉罕的諾言","04_Gods_Promise_to_Abraham","Gen/11","創世記 11–21 章","tent","神應許年老的亞伯拉罕，子孫要像天上的星那樣多；後來以撒真的出生了。"],
+ [5,"上帝考驗亞伯拉罕的愛","05_God_Tests_Abrahams_Love","Gen/22","創世記 22–24 章","altar","亞伯拉罕願意把最愛的以撒獻給神，神卻預備了一隻公羊代替。"],
+ [6,"騙子雅各","06_Jacob_the_Deceiver","Gen/25","創世記 25–33 章","tent","雅各用計得到祝福後逃走，夢見通天的梯子；多年後與哥哥以掃和好。"],
+ [7,"寵兒變成奴僕","07_A_Favorite_Son_Becomes_a_Slave","Gen/37","創世記 37、39 章","well","穿彩衣的約瑟被嫉妒的哥哥們丟進坑裡，又被賣到埃及作奴僕。"],
+ [8,"神給奴僕約瑟尊榮","08_God_Honors_Joseph_the_Slave","Gen/39","創世記 39–45 章","pyramid","約瑟為法老解夢，成為宰相儲糧救荒，最後饒恕並接回全家。"],
+ [9,"來自河流的王子","09_The_Prince_From_the_River","Exo/2","出埃及記 2 章","basket","嬰孩摩西被放進蒲草箱漂在河上，法老的女兒救起他，在王宮長大。"],
+ [10,"王子成為牧羊人","10_The_Prince_Becomes_a_Shepherd","Exo/2","出埃及記 2–5 章","bush","摩西逃到曠野牧羊，在燒不毀的荊棘裡聽見神呼召他。"],
+ [11,"告別了，法老！","11_Goodbye_Pharaoh","Exo/4","出埃及記 4–15 章","pyramid","經過十災，以色列人離開埃及，神分開紅海讓他們走乾地。"],
+ [12,"四十年","12_Forty_Years","Exo/15","出埃及記 15 章 – 民數記 14 章","tent","在曠野裡，神每天降下嗎哪，又在西奈山頒布十誡。"],
+ [13,"約書亞掌權","13_Joshua_Takes_Charge","Jos/1","約書亞記 1–6 章","wall","約書亞帶百姓過約旦河，繞城七天後，耶利哥城牆倒塌。"],
+ [14,"神的大力士參孫","14_Samson_Gods_Strong_Man","Judg/13","士師記 13–16 章","temple","神賜參孫極大的力氣；他失敗後仍向神呼求，神再次記念他。"],
+ [15,"基甸的小軍隊","15_Gideons_Little_Army","Judg/6","士師記 6–8 章","tent","基甸只帶三百人，用號角、瓶子和火把，靠神打勝仗。"],
+ [16,"路得的愛情故事","16_Ruth_A_Love_Story","Ruth/1","路得記","field","路得忠心陪伴婆婆拿俄米，在波阿斯的田裡拾麥穗，蒙神賜福。"],
+ [17,"神的童僕撒母耳","17_Samuel_Gods_BoyServant","1Sam/1","撒母耳記上 1–7 章","house","哈拿禱告得到撒母耳；小撒母耳在聖殿夜裡聽見神呼喚他的名字。"],
+ [18,"羞愧的國王","18_The_Handsome_Foolish_King","1Sam/8","撒母耳記上 8–16 章","palace","高大英俊的掃羅成為第一位王，卻因不聽從神而失去王位。"],
+ [19,"牧羊的大衛","19_David_the_Shepherd_Boy","1Sam/16","撒母耳記上 16–20 章","sheep","牧羊少年大衛被膏立，靠著神用機弦和石子打倒巨人歌利亞。"],
+ [20,"大衛王（第一集）","20_David_the_King_Part_1","1Sam/24","撒母耳記上 24–31 章；撒母耳記下 1–2 章","palace","大衛兩次有機會卻不傷害追殺他的掃羅，等候神的時間作王。"],
+ [21,"大衛王（第二集）","21_David_the_King_Part_2","2Sam/1","撒母耳記下 1–12 章","tower","大衛歡喜迎回約櫃；犯錯之後，他真心向神悔改。"],
+ [22,"明智的所羅門王","22_Wise_King_Solomon","1Kgs/1","列王紀上 1–12 章","temple","所羅門向神求智慧，公正審判，並建造了榮美的聖殿。"],
+ [23,"好王，壞王","23_Good_Kings_Bad_Kings","2Chr/33","歷代志下 33–36 章","palace","王國分裂後，有的王跟隨神，有的王離棄神，百姓的命運也隨之改變。"],
+ [24,"求神降火的以利亞","24_The_Man_of_Fire","1Kgs/17","列王紀上 17–19 章；列王紀下 2 章","altar","以利亞在迦密山上禱告，神降下火來，證明祂是真神。"],
+ [25,"行神蹟的以利沙","25_Elisha_Man_of_Miracles","2Kgs/2","列王紀下 2–13 章","house","以利沙讓寡婦的油倒不完，也幫助乃縵的病得醫治。"],
+ [26,"約拿和大魚","26_Jonah_and_the_Big_Fish","Jonah/1","約拿書","fish","約拿逃避神的差遣，被大魚吞下三天，後來去尼尼微傳悔改的信息。"],
+ [27,"以賽亞看見未來","27_Isaiah_Sees_the_Future","Isa/1","以賽亞書 1、6、7、9、53 章","lighthouse","以賽亞預言有一位嬰孩要來，祂要為眾人受苦，帶來平安。"],
+ [28,"流淚的耶利米","28_Jeremiah_Man_of_Tears","Jer/1","耶利米書","well","耶利米忠心傳講神的話，即使被嘲笑、被丟進泥坑也不放棄。"],
+ [29,"以西結：看見異象的人","29_Ezekiel_Man_of_Visions","Ezek/1","以西結書 1–37 章","lighthouse","以西結看見滿谷枯骨重新活過來，神應許要使百姓得著新生命。"],
+ [30,"漂亮的以斯帖王后","30_Beautiful_Queen_Esther","Esth/1","以斯帖記 1–10 章","palace","以斯帖冒著生命危險去見王，為同胞求情，拯救了全族的人。"],
+ [31,"但以理被抓","31_Daniel_the_Captive","Dan/1","但以理書 1–2 章","house","少年但以理被帶到巴比倫，他立志不吃王的膳，神賜他智慧。"],
+ [32,"但以理和神祕的夢","32_Daniel_and_the_Mystery_Dream","Dan/2","但以理書 2 章","tower","國王做了一個怪夢，神讓但以理說出夢的內容和意思。"],
+ [33,"不肯屈服的人","33_The_Men_Who_Would_Not_Bend","Dan/3","但以理書 3 章","furnace","三位朋友不肯拜金像，被丟進火窯，神保守他們毫髮無傷。"],
+ [34,"但以理和獅子坑","34_Daniel_and_the_Lions_Den","Dan/6","但以理書 6 章","den","但以理照常向神禱告，被丟進獅子坑，神封住了獅子的口。"],
+ [35,"尼希米的巨大城牆","35_The_Great_Wall_of_Nehemiah","Neh/1","尼希米記","wall","尼希米禱告後回到耶路撒冷，帶領百姓同心重建城牆。"],
+ [36,"耶穌的誕生","36_The_Birth_of_Jesus","Matt/1","馬太福音 1–2 章；路加福音 1–2 章","stable","耶穌生在伯利恆的馬槽裡，天使向牧羊人報好消息，星星為博士引路。"],
+ [37,"神差遣約翰","37_A_Man_Sent_From_God","Matt/3","路加福音 1–2 章；馬可福音 6 章","river","施洗約翰在曠野呼喊人悔改，為耶穌預備道路，也為耶穌施洗。"],
+ [38,"耶穌受試探","38_A_Terrible_Time_for_Jesus","Matt/4","馬太福音 4 章；路加福音 4 章","hill","耶穌在曠野禁食四十天，每次都用神的話勝過魔鬼的試探。"],
+ [39,"耶穌呼召十二門徒","39_Jesus_Chooses_12_Helpers","Matt/4","馬太福音 4–7 章；馬可福音 1 章；路加福音 6 章","boat","耶穌在海邊呼召漁夫跟從祂，一共選了十二位門徒。"],
+ [40,"耶穌的神蹟","40_The_Miracles_of_Jesus","Matt/8","馬太福音 8–9 章；馬可福音 1–2、4 章；路加福音 4、8 章","house","耶穌使水變酒、醫好病人，朋友們甚至拆開屋頂把癱子送到祂面前。"],
+ [41,"聖殿領袖探訪耶穌","41_A_Temple_Leader_Visits_Jesus","John/2","約翰福音 2–3 章；民數記 21 章","house","尼哥底母夜裡來找耶穌，耶穌告訴他人要重生，神愛世人。"],
+ [42,"偉大的教師耶穌","42_Jesus_the_Great_Teacher","Matt/5","馬太福音 5–7 章；路加福音 6 章","hill","耶穌在山上教導人：愛仇敵、為人禱告、把房子蓋在磐石上。"],
+ [43,"農夫和種子","43_The_Farmer_and_the_Seed","Matt/13","馬太福音 13 章","field","撒種的比喻：神的話落在好土裡，就結出許多果子。"],
+ [44,"財主、窮人","44_Rich_Man_Poor_Man","Luke/16","路加福音 16 章","palace","財主天天享樂，不理門口的拉撒路；耶穌提醒人看重永恆。"],
+ [45,"浪子回頭","45_The_Prodigal_Son","Luke/15","路加福音 15 章","house","小兒子花光錢回家，父親遠遠看見就跑去抱他，為他擺設筵席。"],
+ [46,"好撒瑪利亞人","46_The_Good_Samaritan","Luke/10","路加福音 10 章","inn","受傷的人倒在路旁，停下來幫助他的，是被人看不起的撒瑪利亞人。"],
+ [47,"井邊的婦人","47_The_Woman_at_the_Well","John/4","約翰福音 4 章","well","耶穌在雅各井旁向撒瑪利亞婦人要水喝，告訴她生命的活水。"],
+ [48,"耶穌平靜風浪","48_Jesus_Stills_the_Stormy_Sea","Matt/8","馬太福音 8、14 章；馬可福音 4 章；路加福音 8 章","boat","門徒在暴風中害怕，耶穌起來斥責風和海，就大大平靜了。"],
+ [49,"重生的女孩","49_The_Girl_Who_Lived_Twice","Mark/5","馬可福音 5 章；路加福音 8 章","house","睚魯的女兒死了，耶穌拉著她的手叫她起來，她就活了。"],
+ [50,"耶穌醫治瞎子","50_Jesus_Heals_the_Blind","Mark/10","馬可福音 10 章；路加福音 18 章；約翰福音 9 章","tree","瞎眼的巴底買大聲呼求，耶穌停下腳步，使他重新看見。"],
+ [51,"耶穌餵飽五千人","51_Jesus_Feeds_5000_People","Matt/14","約翰福音 6 章","basket","一個孩子獻出五餅二魚，耶穌祝謝後，讓五千人都吃飽了。"],
+ [52,"耶穌與拉撒路","52_Jesus_and_Lazarus","John/11","約翰福音 11 章","tomb","耶穌為朋友拉撒路哭了，然後呼叫他從墳墓裡出來。"],
+ [53,"耶穌與撒該","53_Jesus_and_Zaccheus","Luke/19","路加福音 19 章","tree","矮個子撒該爬上桑樹看耶穌，耶穌卻要到他家作客，他的生命因此改變。"],
+ [54,"第一個復活節","54_The_First_Easter","Matt/26","馬太福音 26–28 章；路加福音 22–24 章；約翰福音 13–21 章","easter","耶穌被釘十字架、埋葬；第三天墳墓空了，祂復活了！"],
+ [55,"教會的誕生","55_The_Birth_of_the_Church","Acts/1","使徒行傳 1–4 章","church","耶穌升天後，聖靈降臨，門徒勇敢傳福音，許多人信主。"],
+ [56,"教會遭受困難","56_The_Church_Meets_Trouble","Acts/5","使徒行傳 4–9 章","house","信徒被恐嚇、被追趕，司提反殉道，福音卻因此傳得更遠。"],
+ [57,"彼得和禱告的能力","57_Peter_and_the_Power_of_Prayer","Acts/9","使徒行傳 9–12 章","tower","彼得被關進監獄，教會為他切切禱告，天使打開了牢門。"],
+ [58,"傳講耶穌的掃羅","58_From_Persecutor_to_Preacher","Acts/8","使徒行傳 8–9 章","house","掃羅在大馬士革路上遇見復活的耶穌，從逼迫者變成傳道者。"],
+ [59,"保羅的奇異遊歷","59_Pauls_Amazing_Travels","Acts/16","使徒行傳 16、27–28 章；提摩太後書 4 章","boat","保羅坐船走遍各地傳福音，遇到監獄、地震和船難，神一路保守。"],
+ [60,"天堂，神美好的家","60_Heaven_Gods_Beautiful_Home","John/14","約翰福音 14 章；哥林多後書 5 章；啟示錄 4、21–22 章","gate","耶穌為我們預備地方；那裡不再有眼淚，神要與人同住。"]
+];
+const STORY = {}; S.forEach(a=>{STORY[a[0]]={id:a[0],t:a[1],slug:a[2],bk:a[3],ref:a[4],kind:a[5],sum:a[6]};});
+
+const VERSE={"1": ["創 1:1", "Gen 1:1", "起初，神創造天地。"], "2": ["創 3:15", "Gen 3:15", "我又要叫你和女人彼此為仇；你的後裔和女人的後裔也彼此為仇。女人的後裔要傷你的頭；你要傷他的腳跟。"], "3": ["創 9:13", "Gen 9:13", "我把虹放在雲彩中，這就可作我與地立約的記號了。"], "4": ["創 15:5", "Gen 15:5", "於是領他走到外邊，說：「你向天觀看，數算眾星，能數得過來嗎？」又對他說：「你的後裔將要如此。」"], "5": ["創 22:8", "Gen 22:8", "亞伯拉罕說：「我兒，神必自己預備作燔祭的羊羔。」於是二人同行。"], "6": ["創 28:15", "Gen 28:15", "我也與你同在。你無論往哪裡去，我必保佑你，領你歸回這地，總不離棄你，直到我成全了向你所應許的。"], "7": ["創 37:3", "Gen 37:3", "以色列原來愛約瑟過於愛他的眾子，因為約瑟是他年老生的；他給約瑟做了一件彩衣。"], "8": ["創 50:20", "Gen 50:20", "從前你們的意思是要害我，但神的意思原是好的，要保全許多人的性命，成就今日的光景。"], "9": ["出 2:10", "Exod 2:10", "孩子漸長，婦人把他帶到法老的女兒那裡，就作了她的兒子。她給孩子起名叫摩西，意思說：「因我把他從水裡拉出來。」"], "10": ["出 3:5", "Exod 3:5", "神說：「不要近前來。當把你腳上的鞋脫下來，因為你所站之地是聖地」。"], "11": ["出 14:14", "Exod 14:14", "耶和華必為你們爭戰；你們只管靜默，不要作聲。"], "12": ["出 16:4", "Exod 16:4", "耶和華對摩西說：「我要將糧食從天降給你們。百姓可以出去，每天收每天的分，我好試驗他們遵不遵我的法度。"], "13": ["書 1:9", "Josh 1:9", "我豈沒有吩咐你嗎？你當剛強壯膽！不要懼怕，也不要驚惶；因為你無論往哪裡去，耶和華─你的神必與你同在。"], "14": ["士 16:28", "Judg 16:28", "參孫求告耶和華說：「主耶和華啊，求你眷念我。神啊，求你賜我這一次的力量，使我在非利士人身上報那剜我雙眼的仇。」"], "15": ["士 7:7", "Judg 7:7", "耶和華對基甸說：「我要用這舔水的三百人拯救你們，將米甸人交在你手中；其餘的人都可以各歸各處去。」"], "16": ["得 1:16", "Ruth 1:16", "路得說：「不要催我回去不跟隨你。你往哪裡去，我也往那裡去；你在哪裡住宿，我也在那裡住宿；你的國就是我的國，你的神就是我的神。"], "17": ["撒上 3:10", "1 Sam 3:10", "耶和華又來站著，像前三次呼喚說：「撒母耳啊！撒母耳啊！」撒母耳回答說：「請說，僕人敬聽！」"], "18": ["撒上 15:22", "1 Sam 15:22", "撒母耳說：耶和華喜悅燔祭和平安祭，豈如喜悅人聽從他的話呢？聽命勝於獻祭；順從勝於公羊的脂油。"], "19": ["撒上 17:45", "1 Sam 17:45", "大衛對非利士人說：「你來攻擊我，是靠著刀槍和銅戟；我來攻擊你，是靠著萬軍之耶和華的名，就是你所怒罵帶領以色列軍隊的神。"], "20": ["撒上 24:6", "1 Sam 24:6", "對跟隨他的人說：「我的主乃是耶和華的受膏者，我在耶和華面前萬不敢伸手害他，因他是耶和華的受膏者。」"], "21": ["撒下 12:13", "2 Sam 12:13", "大衛對拿單說：「我得罪耶和華了！」拿單說：「耶和華已經除掉你的罪，你必不至於死。"], "22": ["王上 3:9", "1 Kgs 3:9", "所以求你賜我智慧，可以判斷你的民，能辨別是非。不然，誰能判斷這眾多的民呢？"], "23": ["代下 33:13", "2 Chr 33:13", "他祈禱耶和華，耶和華就允准他的祈求，垂聽他的禱告，使他歸回耶路撒冷，仍坐國位。瑪拿西這才知道惟獨耶和華是神。"], "24": ["王上 18:39", "1 Kgs 18:39", "眾民看見了，就俯伏在地，說：「耶和華是神！耶和華是神！」"], "25": ["王下 5:14", "2 Kgs 5:14", "於是乃縵下去，照著神人的話，在約旦河裡沐浴七回；他的肉復原，好像小孩子的肉，他就潔淨了。"], "26": ["拿 1:17", "Jonah 1:17", "耶和華安排一條大魚吞了約拿，他在魚腹中三日三夜。"], "27": ["賽 9:6", "Isa 9:6", "因有一嬰孩為我們而生；有一子賜給我們。政權必擔在他的肩頭上；他名稱為「奇妙策士、全能的神、永在的父、和平的君」。"], "28": ["耶 29:11", "Jer 29:11", "耶和華說：我知道我向你們所懷的意念是賜平安的意念，不是降災禍的意念，要叫你們末後有指望。"], "29": ["結 37:5", "Ezek 37:5", "主耶和華對這些骸骨如此說：『我必使氣息進入你們裡面，你們就要活了。"], "30": ["斯 4:14", "Esth 4:14", "此時你若閉口不言，猶大人必從別處得解脫，蒙拯救；你和你父家必致滅亡。焉知你得了王后的位分不是為現今的機會嗎？"], "31": ["但 1:8", "Dan 1:8", "但以理卻立志不以王的膳和王所飲的酒玷污自己，所以求太監長容他不玷污自己。"], "32": ["但 2:28", "Dan 2:28", "只有一位在天上的神能顯明奧祕的事。"], "33": ["但 3:17", "Dan 3:17", "即便如此，我們所事奉的神能將我們從烈火的窯中救出來。王啊，他也必救我們脫離你的手。"], "34": ["但 6:22", "Dan 6:22", "我的神差遣使者，封住獅子的口，叫獅子不傷我；因我在神面前無辜，我在王面前也沒有行過虧損的事。"], "35": ["尼 2:20", "Neh 2:20", "我回答他們說：「天上的神必使我們亨通。我們作他僕人的，要起來建造；你們卻在耶路撒冷無分、無權、無紀念。」"], "36": ["路 2:11", "Luke 2:11", "因今天在大衛的城裡，為你們生了救主，就是主基督。"], "37": ["太 3:3", "Matt 3:3", "這人就是先知以賽亞所說的。他說：「在曠野有人聲喊著說：預備主的道，修直他的路！」"], "38": ["太 4:4", "Matt 4:4", "耶穌卻回答說：「經上記著說：人活著，不是單靠食物，乃是靠神口裡所出的一切話。」"], "39": ["太 4:19", "Matt 4:19", "耶穌對他們說：「來跟從我，我要叫你們得人如得魚一樣。」"], "40": ["可 2:5", "Mark 2:5", "耶穌見他們的信心，就對癱子說：「小子，你的罪赦了。」"], "41": ["約 3:16", "John 3:16", "神愛世人，甚至將他的獨生子賜給他們，叫一切信他的，不致滅亡，反得永生。"], "42": ["太 7:24", "Matt 7:24", "所以，凡聽見我這話就去行的，好比一個聰明人，把房子蓋在磐石上。"], "43": ["太 13:23", "Matt 13:23", "撒在好地上的，就是人聽道明白了，後來結實，有一百倍的，有六十倍的，有三十倍的。"], "44": ["路 16:25", "Luke 16:25", "亞伯拉罕說：『兒啊，你該回想你生前享過福，拉撒路也受過苦；如今他在這裡得安慰，你倒受痛苦。"], "45": ["路 15:20", "Luke 15:20", "於是起來，往他父親那裡去。相離還遠，他父親看見，就動了慈心，跑去抱著他的頸項，連連與他親嘴。"], "46": ["路 10:37", "Luke 10:37", "他說：「是憐憫他的。」耶穌說：「你去照樣行吧。」"], "47": ["約 4:14", "John 4:14", "人若喝我所賜的水就永遠不渴。我所賜的水要在他裡頭成為泉源，直湧到永生。"], "48": ["可 4:39", "Mark 4:39", "耶穌醒了，斥責風，向海說：「住了吧！靜了吧！」風就止住，大大地平靜了。"], "49": ["可 5:41", "Mark 5:41", "就拉著孩子的手，對她說：「大利大，古米！」（翻出來就是說：「閨女，我吩咐你起來！」）"], "50": ["約 9:25", "John 9:25", "他說：「他是個罪人不是，我不知道；有一件事我知道，從前我是眼瞎的，如今能看見了。」"], "51": ["約 6:35", "John 6:35", "耶穌說：「我就是生命的糧。到我這裡來的，必定不餓；信我的，永遠不渴。"], "52": ["約 11:25", "John 11:25", "耶穌對她說：「復活在我，生命也在我。信我的人雖然死了，也必復活。"], "53": ["路 19:10", "Luke 19:10", "人子來，為要尋找、拯救失喪的人。"], "54": ["太 28:6", "Matt 28:6", "他不在這裡，照他所說的，已經復活了。你們來看安放主的地方。"], "55": ["徒 1:8", "Acts 1:8", "但聖靈降臨在你們身上，你們就必得著能力，並要在耶路撒冷、猶太全地，和撒馬利亞，直到地極，作我的見證。"], "56": ["徒 8:4", "Acts 8:4", "那些分散的人往各處去傳道。"], "57": ["徒 12:5", "Acts 12:5", "於是彼得被囚在監裡；教會卻為他切切地禱告神。"], "58": ["徒 9:20", "Acts 9:20", "就在各會堂裡宣傳耶穌，說他是神的兒子。"], "59": ["提後 4:7", "2 Tim 4:7", "那美好的仗我已經打過了，當跑的路我已經跑盡了，所信的道我已經守住了。"], "60": ["啟 21:4", "Rev 21:4", "神要擦去他們一切的眼淚；不再有死亡，也不再有悲哀、哭號、疼痛，因為以前的事都過去了。"]};
+const YEAR={"1": "起初", "2": "起初", "3": "上古", "4": "約西元前2090年", "5": "約西元前2050年", "6": "約西元前1930年", "7": "約西元前1900年", "8": "約西元前1880年", "9": "約西元前1525年", "10": "約西元前1485年", "11": "約西元前1446年", "12": "約西元前1446–1406年", "13": "約西元前1406年", "15": "約西元前1180年", "16": "約西元前1120年", "14": "約西元前1075年", "17": "約西元前1100年", "18": "約西元前1050年", "19": "約西元前1025年", "20": "約西元前1010年", "21": "約西元前1000年", "22": "約西元前970年", "24": "約西元前860年", "25": "約西元前850年", "26": "約西元前770年", "27": "約西元前740年", "23": "約西元前690年", "28": "約西元前627–586年", "29": "約西元前593年", "31": "約西元前605年", "32": "約西元前603年", "33": "約西元前600–580年", "34": "約西元前539年", "30": "約西元前480年", "35": "約西元前445年", "36": "約西元前5年", "37": "約27年", "38": "約27年", "39": "約28年", "40": "約28年", "41": "約28年", "47": "約28年", "42": "約28年", "43": "約29年", "48": "約29年", "49": "約29年", "51": "約29年", "44": "約29年", "45": "約29年", "46": "約29年", "50": "約30年", "52": "約30年", "53": "約30年", "54": "約30年", "55": "約30年", "56": "約34年", "58": "約35年", "57": "約44年", "59": "約46–67年", "60": "將來"};
+const ERAS=[["起初", "年代未載", [1, 2, 3], "#cfe8b8"], ["先祖", "約西元前2100–1800年", [4, 5, 6, 7, 8], "#f3e2a6"], ["出埃及", "約西元前1500–1400年", [9, 10, 11, 12], "#f6d3a3"], ["士師", "約西元前1400–1050年", [13, 15, 16, 14], "#e9d6b8"], ["統一王國", "約西元前1100–930年", [17, 18, 19, 20, 21, 22], "#d8e6a8"], ["列王與先知", "約西元前930–586年", [24, 25, 26, 27, 23, 28, 29], "#cfe1cf"], ["被擄與歸回", "約西元前605–430年", [31, 32, 33, 34, 30, 35], "#ead7c4"], ["耶穌生平", "約西元前5年–30年", [36, 37, 38, 39, 40, 41, 47, 42, 43, 48, 49, 51, 44, 45, 46, 50, 52, 53, 54], "#c9ddf6"], ["初代教會", "約30–67年", [55, 56, 58, 57, 59], "#d9d2f2"], ["將來", "應許", [60], "#f7e3a0"]];
+Object.keys(STORY).forEach(k=>{const s=STORY[k]; s.v=VERSE[k]; s.yr=YEAR[k];});
+const TL=[]; ERAS.forEach((e,ei)=>e[2].forEach(id=>{STORY[id].era=ei; TL.push(id);}));
+const ZY={"t":{"1":["ㄕㄤˋ","ㄉㄧˋ","ㄔㄨㄤˋ","ㄗㄠˋ","ㄨㄢˋ","ㄨˋ"],"2":["ㄖㄣˊ","ㄌㄟˋ","ㄅㄟ","ㄕㄤ","˙ㄉㄜ","ㄎㄞ","ㄕˇ"],"3":["ㄏㄨㄥˊ","ㄕㄨㄟˇ","ㄈㄢˋ","ㄌㄢˋ"],"4":["ㄕㄤˋ","ㄉㄧˋ","ㄉㄨㄟˋ","ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","˙ㄉㄜ","ㄋㄨㄛˋ","ㄧㄢˊ"],"5":["ㄕㄤˋ","ㄉㄧˋ","ㄎㄠˇ","ㄧㄢˋ","ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","˙ㄉㄜ","ㄞˋ"],"6":["ㄆㄧㄢˋ","˙ㄗ","ㄧㄚˇ","ㄍㄜˋ"],"7":["ㄔㄨㄥˇ","ㄦˊ","ㄅㄧㄢˋ","ㄔㄥˊ","ㄋㄨˊ","ㄆㄨˊ"],"8":["ㄕㄣˊ","ㄍㄟˇ","ㄋㄨˊ","ㄆㄨˊ","ㄩㄝ","ㄙㄜˋ","ㄗㄨㄣ","ㄖㄨㄥˊ"],"9":["ㄌㄞˊ","ㄗˋ","ㄏㄜˊ","ㄌㄧㄡˊ","˙ㄉㄜ","ㄨㄤˊ","ㄗˇ"],"10":["ㄨㄤˊ","ㄗˇ","ㄔㄥˊ","ㄨㄟˊ","ㄇㄨˋ","ㄧㄤˊ","ㄖㄣˊ"],"11":["ㄍㄠˋ","ㄅㄧㄝˊ","˙ㄌㄜ","","ㄈㄚˇ","ㄌㄠˇ",""],"12":["ㄙˋ","ㄕˊ","ㄋㄧㄢˊ"],"13":["ㄩㄝ","ㄕㄨ","ㄧㄚˋ","ㄓㄤˇ","ㄑㄩㄢˊ"],"14":["ㄕㄣˊ","˙ㄉㄜ","ㄉㄚˋ","ㄌㄧˋ","ㄕˋ","ㄕㄣ","ㄙㄨㄣ"],"15":["ㄐㄧ","ㄉㄧㄢ","˙ㄉㄜ","ㄒㄧㄠˇ","ㄐㄩㄣ","ㄉㄨㄟˋ"],"16":["ㄌㄨˋ","ㄉㄜˊ","˙ㄉㄜ","ㄞˋ","ㄑㄧㄥˊ","ㄍㄨˋ","ㄕˋ"],"17":["ㄕㄣˊ","˙ㄉㄜ","ㄊㄨㄥˊ","ㄆㄨˊ","ㄙㄚ","ㄇㄨˇ","ㄦˇ"],"18":["ㄒㄧㄡ","ㄎㄨㄟˋ","˙ㄉㄜ","ㄍㄨㄛˊ","ㄨㄤˊ"],"19":["ㄇㄨˋ","ㄧㄤˊ","˙ㄉㄜ","ㄉㄚˋ","ㄨㄟˋ"],"20":["ㄉㄚˋ","ㄨㄟˋ","ㄨㄤˊ","","ㄉㄧˋ","ㄧ","ㄐㄧˊ",""],"21":["ㄉㄚˋ","ㄨㄟˋ","ㄨㄤˊ","","ㄉㄧˋ","ㄦˋ","ㄐㄧˊ",""],"22":["ㄇㄧㄥˊ","ㄓˋ","˙ㄉㄜ","ㄙㄨㄛˇ","ㄌㄨㄛˊ","ㄇㄣˊ","ㄨㄤˊ"],"23":["ㄏㄠˇ","ㄨㄤˊ","","ㄏㄨㄞˋ","ㄨㄤˊ"],"24":["ㄑㄧㄡˊ","ㄕㄣˊ","ㄐㄧㄤˋ","ㄏㄨㄛˇ","˙ㄉㄜ","ㄧˇ","ㄌㄧˋ","ㄧㄚˋ"],"25":["ㄒㄧㄥˊ","ㄕㄣˊ","ㄐㄧ","˙ㄉㄜ","ㄧˇ","ㄌㄧˋ","ㄕㄚ"],"26":["ㄩㄝ","ㄋㄚˊ","ㄏㄜˊ","ㄉㄚˋ","ㄩˊ"],"27":["ㄧˇ","ㄙㄞˋ","ㄧㄚˋ","ㄎㄢˋ","ㄐㄧㄢˋ","ㄨㄟˋ","ㄌㄞˊ"],"28":["ㄌㄧㄡˊ","ㄌㄟˋ","˙ㄉㄜ","ㄧㄝˊ","ㄌㄧˋ","ㄇㄧˇ"],"29":["ㄧˇ","ㄒㄧ","ㄐㄧㄝˊ","","ㄎㄢˋ","ㄐㄧㄢˋ","ㄧˋ","ㄒㄧㄤˋ","˙ㄉㄜ","ㄖㄣˊ"],"30":["ㄆㄧㄠˋ","ㄌㄧㄤˋ","˙ㄉㄜ","ㄧˇ","ㄙ","ㄊㄧㄝ","ㄨㄤˊ","ㄏㄡˋ"],"31":["ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄅㄟˋ","ㄓㄨㄚ"],"32":["ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄏㄜˊ","ㄕㄣˊ","ㄇㄧˋ","˙ㄉㄜ","ㄇㄥˋ"],"33":["ㄅㄨˋ","ㄎㄣˇ","ㄑㄩ","ㄈㄨˊ","˙ㄉㄜ","ㄖㄣˊ"],"34":["ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄏㄜˊ","ㄕ","˙ㄗ","ㄎㄥ"],"35":["ㄋㄧˊ","ㄒㄧ","ㄇㄧˇ","˙ㄉㄜ","ㄐㄩˋ","ㄉㄚˋ","ㄔㄥˊ","ㄑㄧㄤˊ"],"36":["ㄧㄝˊ","ㄙㄨ","˙ㄉㄜ","ㄉㄢˋ","ㄕㄥ"],"37":["ㄕㄣˊ","ㄔㄞ","ㄑㄧㄢˇ","ㄩㄝ","ㄏㄢˋ"],"38":["ㄧㄝˊ","ㄙㄨ","ㄕㄡˋ","ㄕˋ","ㄊㄢˋ"],"39":["ㄧㄝˊ","ㄙㄨ","ㄏㄨ","ㄓㄠˋ","ㄕˊ","ㄦˋ","ㄇㄣˊ","ㄊㄨˊ"],"40":["ㄧㄝˊ","ㄙㄨ","˙ㄉㄜ","ㄕㄣˊ","ㄐㄧ"],"41":["ㄕㄥˋ","ㄉㄧㄢˋ","ㄌㄧㄥˇ","ㄒㄧㄡˋ","ㄊㄢˋ","ㄈㄤˇ","ㄧㄝˊ","ㄙㄨ"],"42":["ㄨㄟˇ","ㄉㄚˋ","˙ㄉㄜ","ㄐㄧㄠˋ","ㄕ","ㄧㄝˊ","ㄙㄨ"],"43":["ㄋㄨㄥˊ","ㄈㄨ","ㄏㄜˊ","ㄓㄨㄥˇ","˙ㄗ"],"44":["ㄘㄞˊ","ㄓㄨˇ","","ㄑㄩㄥˊ","ㄖㄣˊ"],"45":["ㄌㄤˋ","˙ㄗ","ㄏㄨㄟˊ","ㄊㄡˊ"],"46":["ㄏㄠˇ","ㄙㄚ","ㄇㄚˇ","ㄌㄧˋ","ㄧㄚˋ","ㄖㄣˊ"],"47":["ㄐㄧㄥˇ","ㄅㄧㄢ","˙ㄉㄜ","ㄈㄨˋ","ㄖㄣˊ"],"48":["ㄧㄝˊ","ㄙㄨ","ㄆㄧㄥˊ","ㄐㄧㄥˋ","ㄈㄥ","ㄌㄤˋ"],"49":["ㄔㄨㄥˊ","ㄕㄥ","˙ㄉㄜ","ㄋㄩˇ","ㄏㄞˊ"],"50":["ㄧㄝˊ","ㄙㄨ","ㄧ","ㄓˋ","ㄒㄧㄚ","˙ㄗ"],"51":["ㄧㄝˊ","ㄙㄨ","ㄨㄟˋ","ㄅㄠˇ","ㄨˇ","ㄑㄧㄢ","ㄖㄣˊ"],"52":["ㄧㄝˊ","ㄙㄨ","ㄩˇ","ㄌㄚ","ㄙㄚ","ㄌㄨˋ"],"53":["ㄧㄝˊ","ㄙㄨ","ㄩˇ","ㄙㄚ","ㄍㄞ"],"54":["ㄉㄧˋ","ㄧ","ㄍㄜˋ","ㄈㄨˋ","ㄏㄨㄛˊ","ㄐㄧㄝˊ"],"55":["ㄐㄧㄠˋ","ㄏㄨㄟˋ","˙ㄉㄜ","ㄉㄢˋ","ㄕㄥ"],"56":["ㄐㄧㄠˋ","ㄏㄨㄟˋ","ㄗㄠ","ㄕㄡˋ","ㄎㄨㄣˋ","ㄋㄢˊ"],"57":["ㄅㄧˇ","ㄉㄜˊ","ㄏㄜˊ","ㄉㄠˇ","ㄍㄠˋ","˙ㄉㄜ","ㄋㄥˊ","ㄌㄧˋ"],"58":["ㄔㄨㄢˊ","ㄐㄧㄤˇ","ㄧㄝˊ","ㄙㄨ","˙ㄉㄜ","ㄙㄠˇ","ㄌㄨㄛˊ"],"59":["ㄅㄠˇ","ㄌㄨㄛˊ","˙ㄉㄜ","ㄑㄧˊ","ㄧˋ","ㄧㄡˊ","ㄌㄧˋ"],"60":["ㄊㄧㄢ","ㄊㄤˊ","","ㄕㄣˊ","ㄇㄟˇ","ㄏㄠˇ","˙ㄉㄜ","ㄐㄧㄚ"]},"s":{"1":["ㄕㄣˊ","ㄩㄥˋ","ㄌㄧㄡˋ","ㄊㄧㄢ","ㄗㄠˋ","ㄔㄨ","ㄍㄨㄤ","","ㄊㄧㄢ","ㄉㄧˋ","","ㄏㄞˇ","ㄧㄤˊ","","ㄉㄨㄥˋ","ㄨˋ","ㄏㄜˊ","ㄖㄣˊ","","ㄉㄧˋ","ㄑㄧ","ㄊㄧㄢ","ㄢ","ㄒㄧ","","ㄧ","ㄑㄧㄝˋ","ㄉㄡ","ㄏㄣˇ","ㄇㄟˇ","ㄏㄠˇ",""],"2":["ㄧㄚˋ","ㄉㄤ","ㄏㄜˊ","ㄒㄧㄚˋ","ㄨㄚˊ","ㄇㄟˊ","ㄧㄡˇ","ㄊㄧㄥ","ㄕㄣˊ","˙ㄉㄜ","ㄏㄨㄚˋ","","ㄌㄧˊ","ㄎㄞ","˙ㄌㄜ","ㄧ","ㄉㄧㄢ","ㄩㄢˊ","","ㄉㄢˋ","ㄕㄣˊ","ㄗㄠˇ","ㄧˇ","ㄩˋ","ㄅㄟˋ","ㄓㄥˇ","ㄐㄧㄡˋ","˙ㄉㄜ","ㄧㄥ","ㄒㄩˇ",""],"3":["ㄋㄨㄛˊ","ㄧㄚˋ","ㄓㄠˋ","˙ㄓㄜ","ㄕㄣˊ","˙ㄉㄜ","ㄈㄣ","ㄈㄨˋ","ㄗㄠˋ","ㄈㄤ","ㄓㄡ","","ㄉㄚˋ","ㄕㄨㄟˇ","ㄊㄨㄟˋ","ㄑㄩˋ","ㄏㄡˋ","","ㄊㄧㄢ","ㄕㄤˋ","ㄔㄨ","ㄒㄧㄢˋ","ㄘㄞˇ","ㄏㄨㄥˊ","","ㄕˋ","ㄕㄣˊ","ㄌㄧˋ","ㄩㄝ","˙ㄉㄜ","ㄐㄧˋ","ㄏㄠˋ",""],"4":["ㄕㄣˊ","ㄧㄥ","ㄒㄩˇ","ㄋㄧㄢˊ","ㄌㄠˇ","˙ㄉㄜ","ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","","˙ㄗ","ㄙㄨㄣ","ㄧㄠˋ","ㄒㄧㄤˋ","ㄊㄧㄢ","ㄕㄤˋ","˙ㄉㄜ","ㄒㄧㄥ","ㄋㄚˋ","ㄧㄤˋ","ㄉㄨㄛ","","ㄏㄡˋ","ㄌㄞˊ","ㄧˇ","ㄙㄚ","ㄓㄣ","˙ㄉㄜ","ㄔㄨ","ㄕㄥ","˙ㄌㄜ",""],"5":["ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","ㄩㄢˋ","ㄧˋ","ㄅㄚˇ","ㄗㄨㄟˋ","ㄞˋ","˙ㄉㄜ","ㄧˇ","ㄙㄚ","ㄒㄧㄢˋ","ㄍㄟˇ","ㄕㄣˊ","","ㄕㄣˊ","ㄑㄩㄝˋ","ㄩˋ","ㄅㄟˋ","˙ㄌㄜ","ㄧ","ㄓ","ㄍㄨㄥ","ㄧㄤˊ","ㄉㄞˋ","ㄊㄧˋ",""],"6":["ㄧㄚˇ","ㄍㄜˋ","ㄩㄥˋ","ㄐㄧˋ","ㄉㄜˊ","ㄉㄠˋ","ㄓㄨˋ","ㄈㄨˊ","ㄏㄡˋ","ㄊㄠˊ","ㄗㄡˇ","","ㄇㄥˋ","ㄐㄧㄢˋ","ㄊㄨㄥ","ㄊㄧㄢ","˙ㄉㄜ","ㄊㄧ","˙ㄗ","","ㄉㄨㄛ","ㄋㄧㄢˊ","ㄏㄡˋ","ㄩˇ","ㄍㄜ","˙ㄍㄜ","ㄧˇ","ㄙㄠˇ","ㄏㄜˊ","ㄏㄠˇ",""],"7":["ㄔㄨㄢ","ㄘㄞˇ","ㄧ","˙ㄉㄜ","ㄩㄝ","ㄙㄜˋ","ㄅㄟˋ","ㄐㄧˊ","ㄉㄨˋ","˙ㄉㄜ","ㄍㄜ","˙ㄍㄜ","˙ㄇㄣ","ㄉㄧㄡ","ㄐㄧㄣˋ","ㄎㄥ","ㄌㄧˇ","","ㄧㄡˋ","ㄅㄟˋ","ㄇㄞˋ","ㄉㄠˋ","ㄞ","ㄐㄧˊ","ㄗㄨㄛˋ","ㄋㄨˊ","ㄆㄨˊ",""],"8":["ㄩㄝ","ㄙㄜˋ","ㄨㄟˋ","ㄈㄚˇ","ㄌㄠˇ","ㄐㄧㄝˇ","ㄇㄥˋ","","ㄔㄥˊ","ㄨㄟˊ","ㄗㄞˇ","ㄒㄧㄤˋ","ㄔㄨˇ","ㄌㄧㄤˊ","ㄐㄧㄡˋ","ㄏㄨㄤ","","ㄗㄨㄟˋ","ㄏㄡˋ","ㄖㄠˊ","ㄕㄨˋ","ㄅㄧㄥˋ","ㄐㄧㄝ","ㄏㄨㄟˊ","ㄑㄩㄢˊ","ㄐㄧㄚ",""],"9":["ㄧㄥ","ㄏㄞˊ","ㄇㄛˊ","ㄒㄧ","ㄅㄟˋ","ㄈㄤˋ","ㄐㄧㄣˋ","ㄆㄨˊ","ㄘㄠˇ","ㄒㄧㄤ","ㄆㄧㄠ","ㄗㄞˋ","ㄏㄜˊ","ㄕㄤˋ","","ㄈㄚˇ","ㄌㄠˇ","˙ㄉㄜ","ㄋㄩˇ","ㄦˊ","ㄐㄧㄡˋ","ㄑㄧˇ","ㄊㄚ","","ㄗㄞˋ","ㄨㄤˊ","ㄍㄨㄥ","ㄓㄤˇ","ㄉㄚˋ",""],"10":["ㄇㄛˊ","ㄒㄧ","ㄊㄠˊ","ㄉㄠˋ","ㄎㄨㄤˋ","ㄧㄝˇ","ㄇㄨˋ","ㄧㄤˊ","","ㄗㄞˋ","ㄕㄠ","ㄅㄨˋ","ㄏㄨㄟˇ","˙ㄉㄜ","ㄐㄧㄥ","ㄐㄧˊ","ㄌㄧˇ","ㄊㄧㄥ","ㄐㄧㄢˋ","ㄕㄣˊ","ㄏㄨ","ㄓㄠˋ","ㄊㄚ",""],"11":["ㄐㄧㄥ","ㄍㄨㄛˋ","ㄕˊ","ㄗㄞ","","ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ","ㄖㄣˊ","ㄌㄧˊ","ㄎㄞ","ㄞ","ㄐㄧˊ","","ㄕㄣˊ","ㄈㄣ","ㄎㄞ","ㄏㄨㄥˊ","ㄏㄞˇ","ㄖㄤˋ","ㄊㄚ","˙ㄇㄣ","ㄗㄡˇ","ㄍㄢ","ㄉㄧˋ",""],"12":["ㄗㄞˋ","ㄎㄨㄤˋ","ㄧㄝˇ","ㄌㄧˇ","","ㄕㄣˊ","ㄇㄟˇ","ㄊㄧㄢ","ㄐㄧㄤˋ","ㄒㄧㄚˋ","˙ㄇㄚ","ㄋㄚˇ","","ㄧㄡˋ","ㄗㄞˋ","ㄒㄧ","ㄋㄞˋ","ㄕㄢ","ㄅㄢ","ㄅㄨˋ","ㄕˊ","ㄐㄧㄝˋ",""],"13":["ㄩㄝ","ㄕㄨ","ㄧㄚˋ","ㄉㄞˋ","ㄅㄞˇ","ㄒㄧㄥˋ","ㄍㄨㄛˋ","ㄩㄝ","ㄉㄢˋ","ㄏㄜˊ","","ㄖㄠˋ","ㄔㄥˊ","ㄑㄧ","ㄊㄧㄢ","ㄏㄡˋ","","ㄧㄝˊ","ㄌㄧˋ","ㄍㄜ","ㄔㄥˊ","ㄑㄧㄤˊ","ㄉㄠˇ","ㄊㄚ",""],"14":["ㄕㄣˊ","ㄘˋ","ㄕㄣ","ㄙㄨㄣ","ㄐㄧˊ","ㄉㄚˋ","˙ㄉㄜ","ㄌㄧˋ","ㄑㄧˋ","","ㄊㄚ","ㄕ","ㄅㄞˋ","ㄏㄡˋ","ㄖㄥˊ","ㄒㄧㄤˋ","ㄕㄣˊ","ㄏㄨ","ㄑㄧㄡˊ","","ㄕㄣˊ","ㄗㄞˋ","ㄘˋ","ㄐㄧˋ","ㄋㄧㄢˋ","ㄊㄚ",""],"15":["ㄐㄧ","ㄉㄧㄢ","ㄓˇ","ㄉㄞˋ","ㄙㄢ","ㄅㄞˇ","ㄖㄣˊ","","ㄩㄥˋ","ㄏㄠˋ","ㄐㄧㄠˇ","","ㄆㄧㄥˊ","˙ㄗ","ㄏㄜˊ","ㄏㄨㄛˇ","ㄅㄚˇ","","ㄎㄠˋ","ㄕㄣˊ","ㄉㄚˇ","ㄕㄥˋ","ㄓㄤˋ",""],"16":["ㄌㄨˋ","ㄉㄜˊ","ㄓㄨㄥ","ㄒㄧㄣ","ㄆㄟˊ","ㄅㄢˋ","ㄆㄛˊ","˙ㄆㄛ","ㄋㄚˊ","ㄜˊ","ㄇㄧˇ","","ㄗㄞˋ","ㄅㄛ","ㄚ","ㄙ","˙ㄉㄜ","ㄊㄧㄢˊ","ㄌㄧˇ","ㄕˊ","ㄇㄞˋ","ㄙㄨㄟˋ","","ㄇㄥˊ","ㄕㄣˊ","ㄘˋ","ㄈㄨˊ",""],"17":["ㄏㄚ","ㄋㄚˊ","ㄉㄠˇ","ㄍㄠˋ","ㄉㄜˊ","ㄉㄠˋ","ㄙㄚ","ㄇㄨˇ","ㄦˇ","","ㄒㄧㄠˇ","ㄙㄚ","ㄇㄨˇ","ㄦˇ","ㄗㄞˋ","ㄕㄥˋ","ㄉㄧㄢˋ","ㄧㄝˋ","ㄌㄧˇ","ㄊㄧㄥ","ㄐㄧㄢˋ","ㄕㄣˊ","ㄏㄨ","ㄏㄨㄢˋ","ㄊㄚ","˙ㄉㄜ","ㄇㄧㄥˊ","ㄗˋ",""],"18":["ㄍㄠ","ㄉㄚˋ","ㄧㄥ","ㄐㄩㄣˋ","˙ㄉㄜ","ㄙㄠˇ","ㄌㄨㄛˊ","ㄔㄥˊ","ㄨㄟˊ","ㄉㄧˋ","ㄧ","ㄨㄟˋ","ㄨㄤˊ","","ㄑㄩㄝˋ","ㄧㄣ","ㄅㄨˋ","ㄊㄧㄥ","ㄘㄨㄥˊ","ㄕㄣˊ","ㄦˊ","ㄕ","ㄑㄩˋ","ㄨㄤˊ","ㄨㄟˋ",""],"19":["ㄇㄨˋ","ㄧㄤˊ","ㄕㄠˋ","ㄋㄧㄢˊ","ㄉㄚˋ","ㄨㄟˋ","ㄅㄟˋ","ㄍㄠ","ㄌㄧˋ","","ㄎㄠˋ","˙ㄓㄜ","ㄕㄣˊ","ㄩㄥˋ","ㄐㄧ","ㄒㄧㄢˊ","ㄏㄜˊ","ㄕˊ","ㄗˇ","ㄉㄚˇ","ㄉㄠˇ","ㄐㄩˋ","ㄖㄣˊ","ㄍㄜ","ㄌㄧˋ","ㄧㄚˋ",""],"20":["ㄉㄚˋ","ㄨㄟˋ","ㄌㄧㄤˇ","ㄘˋ","ㄧㄡˇ","ㄐㄧ","ㄏㄨㄟˋ","ㄑㄩㄝˋ","ㄅㄨˋ","ㄕㄤ","ㄏㄞˋ","ㄓㄨㄟ","ㄕㄚ","ㄊㄚ","˙ㄉㄜ","ㄙㄠˇ","ㄌㄨㄛˊ","","ㄉㄥˇ","ㄏㄡˋ","ㄕㄣˊ","˙ㄉㄜ","ㄕˊ","ㄐㄧㄢ","ㄗㄨㄛˋ","ㄨㄤˊ",""],"21":["ㄉㄚˋ","ㄨㄟˋ","ㄏㄨㄢ","ㄒㄧˇ","ㄧㄥˊ","ㄏㄨㄟˊ","ㄩㄝ","ㄍㄨㄟˋ","","ㄈㄢˋ","ㄘㄨㄛˋ","ㄓ","ㄏㄡˋ","","ㄊㄚ","ㄓㄣ","ㄒㄧㄣ","ㄒㄧㄤˋ","ㄕㄣˊ","ㄏㄨㄟˇ","ㄍㄞˇ",""],"22":["ㄙㄨㄛˇ","ㄌㄨㄛˊ","ㄇㄣˊ","ㄒㄧㄤˋ","ㄕㄣˊ","ㄑㄧㄡˊ","ㄓˋ","ㄏㄨㄟˋ","","ㄍㄨㄥ","ㄓㄥˋ","ㄕㄣˇ","ㄆㄢˋ","","ㄅㄧㄥˋ","ㄐㄧㄢˋ","ㄗㄠˋ","˙ㄌㄜ","ㄖㄨㄥˊ","ㄇㄟˇ","˙ㄉㄜ","ㄕㄥˋ","ㄉㄧㄢˋ",""],"23":["ㄨㄤˊ","ㄍㄨㄛˊ","ㄈㄣ","ㄌㄧㄝˋ","ㄏㄡˋ","","ㄧㄡˇ","˙ㄉㄜ","ㄨㄤˊ","ㄍㄣ","ㄙㄨㄟˊ","ㄕㄣˊ","","ㄧㄡˇ","˙ㄉㄜ","ㄨㄤˊ","ㄌㄧˊ","ㄑㄧˋ","ㄕㄣˊ","","ㄅㄞˇ","ㄒㄧㄥˋ","˙ㄉㄜ","ㄇㄧㄥˋ","ㄩㄣˋ","ㄧㄝˇ","ㄙㄨㄟˊ","ㄓ","ㄍㄞˇ","ㄅㄧㄢˋ",""],"24":["ㄧˇ","ㄌㄧˋ","ㄧㄚˋ","ㄗㄞˋ","ㄐㄧㄚ","ㄇㄧˋ","ㄕㄢ","ㄕㄤˋ","ㄉㄠˇ","ㄍㄠˋ","","ㄕㄣˊ","ㄐㄧㄤˋ","ㄒㄧㄚˋ","ㄏㄨㄛˇ","ㄌㄞˊ","","ㄓㄥˋ","ㄇㄧㄥˊ","ㄊㄚ","ㄕˋ","ㄓㄣ","ㄕㄣˊ",""],"25":["ㄧˇ","ㄌㄧˋ","ㄕㄚ","ㄖㄤˋ","ㄍㄨㄚˇ","ㄈㄨˋ","˙ㄉㄜ","ㄧㄡˊ","ㄉㄠˋ","ㄅㄨˋ","ㄨㄢˊ","","ㄧㄝˇ","ㄅㄤ","ㄓㄨˋ","ㄋㄞˇ","ㄇㄢˋ","˙ㄉㄜ","ㄅㄧㄥˋ","ㄉㄜˊ","ㄧ","ㄓˋ",""],"26":["ㄩㄝ","ㄋㄚˊ","ㄊㄠˊ","ㄅㄧˋ","ㄕㄣˊ","˙ㄉㄜ","ㄔㄞ","ㄑㄧㄢˇ","","ㄅㄟˋ","ㄉㄚˋ","ㄩˊ","ㄊㄨㄣ","ㄒㄧㄚˋ","ㄙㄢ","ㄊㄧㄢ","","ㄏㄡˋ","ㄌㄞˊ","ㄑㄩˋ","ㄋㄧˊ","ㄋㄧˊ","ㄨㄟ","ㄔㄨㄢˊ","ㄏㄨㄟˇ","ㄍㄞˇ","˙ㄉㄜ","ㄒㄧㄣˋ","ㄒㄧ",""],"27":["ㄧˇ","ㄙㄞˋ","ㄧㄚˋ","ㄩˋ","ㄧㄢˊ","ㄧㄡˇ","ㄧ","ㄨㄟˋ","ㄧㄥ","ㄏㄞˊ","ㄧㄠˋ","ㄌㄞˊ","","ㄊㄚ","ㄧㄠˋ","ㄨㄟˋ","ㄓㄨㄥˋ","ㄖㄣˊ","ㄕㄡˋ","ㄎㄨˇ","","ㄉㄞˋ","ㄌㄞˊ","ㄆㄧㄥˊ","ㄢ",""],"28":["ㄧㄝˊ","ㄌㄧˋ","ㄇㄧˇ","ㄓㄨㄥ","ㄒㄧㄣ","ㄔㄨㄢˊ","ㄐㄧㄤˇ","ㄕㄣˊ","˙ㄉㄜ","ㄏㄨㄚˋ","","ㄐㄧˊ","ㄕˇ","ㄅㄟˋ","ㄔㄠˊ","ㄒㄧㄠˋ","","ㄅㄟˋ","ㄉㄧㄡ","ㄐㄧㄣˋ","ㄋㄧˊ","ㄎㄥ","ㄧㄝˇ","ㄅㄨˋ","ㄈㄤˋ","ㄑㄧˋ",""],"29":["ㄧˇ","ㄒㄧ","ㄐㄧㄝˊ","ㄎㄢˋ","ㄐㄧㄢˋ","ㄇㄢˇ","ㄍㄨˇ","ㄎㄨ","ㄍㄨˇ","ㄔㄨㄥˊ","ㄒㄧㄣ","ㄏㄨㄛˊ","ㄍㄨㄛˋ","ㄌㄞˊ","","ㄕㄣˊ","ㄧㄥ","ㄒㄩˇ","ㄧㄠˋ","ㄕˇ","ㄅㄞˇ","ㄒㄧㄥˋ","ㄉㄜˊ","ㄓㄠˊ","ㄒㄧㄣ","ㄕㄥ","ㄇㄧㄥˋ",""],"30":["ㄧˇ","ㄙ","ㄊㄧㄝ","ㄇㄠˋ","˙ㄓㄜ","ㄕㄥ","ㄇㄧㄥˋ","ㄨㄟ","ㄒㄧㄢˇ","ㄑㄩˋ","ㄐㄧㄢˋ","ㄨㄤˊ","","ㄨㄟˋ","ㄊㄨㄥˊ","ㄅㄠ","ㄑㄧㄡˊ","ㄑㄧㄥˊ","","ㄓㄥˇ","ㄐㄧㄡˋ","˙ㄌㄜ","ㄑㄩㄢˊ","ㄗㄨˊ","˙ㄉㄜ","ㄖㄣˊ",""],"31":["ㄕㄠˋ","ㄋㄧㄢˊ","ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄅㄟˋ","ㄉㄞˋ","ㄉㄠˋ","ㄅㄚ","ㄅㄧˇ","ㄌㄨㄣˊ","","ㄊㄚ","ㄌㄧˋ","ㄓˋ","ㄅㄨˋ","ㄔ","ㄨㄤˊ","˙ㄉㄜ","ㄕㄢˋ","","ㄕㄣˊ","ㄘˋ","ㄊㄚ","ㄓˋ","ㄏㄨㄟˋ",""],"32":["ㄍㄨㄛˊ","ㄨㄤˊ","ㄗㄨㄛˋ","˙ㄌㄜ","ㄧ","ㄍㄜˋ","ㄍㄨㄞˋ","ㄇㄥˋ","","ㄕㄣˊ","ㄖㄤˋ","ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄕㄨㄛ","ㄔㄨ","ㄇㄥˋ","˙ㄉㄜ","ㄋㄟˋ","ㄖㄨㄥˊ","ㄏㄜˊ","ㄧˋ","˙ㄙ",""],"33":["ㄙㄢ","ㄨㄟˋ","ㄆㄥˊ","ㄧㄡˇ","ㄅㄨˋ","ㄎㄣˇ","ㄅㄞˋ","ㄐㄧㄣ","ㄒㄧㄤˋ","","ㄅㄟˋ","ㄉㄧㄡ","ㄐㄧㄣˋ","ㄏㄨㄛˇ","ㄧㄠˊ","","ㄕㄣˊ","ㄅㄠˇ","ㄕㄡˇ","ㄊㄚ","˙ㄇㄣ","ㄏㄠˊ","ㄈㄚˋ","ㄨˊ","ㄕㄤ",""],"34":["ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄓㄠˋ","ㄔㄤˊ","ㄒㄧㄤˋ","ㄕㄣˊ","ㄉㄠˇ","ㄍㄠˋ","","ㄅㄟˋ","ㄉㄧㄡ","ㄐㄧㄣˋ","ㄕ","˙ㄗ","ㄎㄥ","","ㄕㄣˊ","ㄈㄥ","ㄓㄨˋ","˙ㄌㄜ","ㄕ","˙ㄗ","˙ㄉㄜ","ㄎㄡˇ",""],"35":["ㄋㄧˊ","ㄒㄧ","ㄇㄧˇ","ㄉㄠˇ","ㄍㄠˋ","ㄏㄡˋ","ㄏㄨㄟˊ","ㄉㄠˋ","ㄧㄝˊ","ㄌㄨˋ","ㄙㄚ","ㄌㄥˇ","","ㄉㄞˋ","ㄌㄧㄥˇ","ㄅㄞˇ","ㄒㄧㄥˋ","ㄊㄨㄥˊ","ㄒㄧㄣ","ㄔㄨㄥˊ","ㄐㄧㄢˋ","ㄔㄥˊ","ㄑㄧㄤˊ",""],"36":["ㄧㄝˊ","ㄙㄨ","ㄕㄥ","ㄗㄞˋ","ㄅㄛˊ","ㄌㄧˋ","ㄏㄥˊ","˙ㄉㄜ","ㄇㄚˇ","ㄘㄠˊ","ㄌㄧˇ","","ㄊㄧㄢ","ㄕˇ","ㄒㄧㄤˋ","ㄇㄨˋ","ㄧㄤˊ","ㄖㄣˊ","ㄅㄠˋ","ㄏㄠˇ","ㄒㄧㄠ","ㄒㄧ","","ㄒㄧㄥ","ㄒㄧㄥ","ㄨㄟˋ","ㄅㄛˊ","ㄕˋ","ㄧㄣˇ","ㄌㄨˋ",""],"37":["ㄕ","ㄒㄧˇ","ㄩㄝ","ㄏㄢˋ","ㄗㄞˋ","ㄎㄨㄤˋ","ㄧㄝˇ","ㄏㄨ","ㄏㄢˇ","ㄖㄣˊ","ㄏㄨㄟˇ","ㄍㄞˇ","","ㄨㄟˋ","ㄧㄝˊ","ㄙㄨ","ㄩˋ","ㄅㄟˋ","ㄉㄠˋ","ㄌㄨˋ","","ㄧㄝˇ","ㄨㄟˋ","ㄧㄝˊ","ㄙㄨ","ㄕ","ㄒㄧˇ",""],"38":["ㄧㄝˊ","ㄙㄨ","ㄗㄞˋ","ㄎㄨㄤˋ","ㄧㄝˇ","ㄐㄧㄣˋ","ㄕˊ","ㄙˋ","ㄕˊ","ㄊㄧㄢ","","ㄇㄟˇ","ㄘˋ","ㄉㄡ","ㄩㄥˋ","ㄕㄣˊ","˙ㄉㄜ","ㄏㄨㄚˋ","ㄕㄥˋ","ㄍㄨㄛˋ","ㄇㄛˊ","ㄍㄨㄟˇ","˙ㄉㄜ","ㄕˋ","ㄊㄢˋ",""],"39":["ㄧㄝˊ","ㄙㄨ","ㄗㄞˋ","ㄏㄞˇ","ㄅㄧㄢ","ㄏㄨ","ㄓㄠˋ","ㄩˊ","ㄈㄨ","ㄍㄣ","ㄘㄨㄥˊ","ㄊㄚ","","ㄧ","ㄍㄨㄥˋ","ㄒㄩㄢˇ","˙ㄌㄜ","ㄕˊ","ㄦˋ","ㄨㄟˋ","ㄇㄣˊ","ㄊㄨˊ",""],"40":["ㄧㄝˊ","ㄙㄨ","ㄕˇ","ㄕㄨㄟˇ","ㄅㄧㄢˋ","ㄐㄧㄡˇ","","ㄧ","ㄏㄠˇ","ㄅㄧㄥˋ","ㄖㄣˊ","","ㄆㄥˊ","ㄧㄡˇ","˙ㄇㄣ","ㄕㄣˋ","ㄓˋ","ㄔㄞ","ㄎㄞ","ㄨ","ㄉㄧㄥˇ","ㄅㄚˇ","ㄊㄢ","˙ㄗ","ㄙㄨㄥˋ","ㄉㄠˋ","ㄊㄚ","ㄇㄧㄢˋ","ㄑㄧㄢˊ",""],"41":["ㄋㄧˊ","ㄍㄜ","ㄉㄧˇ","ㄇㄨˇ","ㄧㄝˋ","ㄌㄧˇ","ㄌㄞˊ","ㄓㄠˇ","ㄧㄝˊ","ㄙㄨ","","ㄧㄝˊ","ㄙㄨ","ㄍㄠˋ","ㄙㄨˋ","ㄊㄚ","ㄖㄣˊ","ㄧㄠˋ","ㄔㄨㄥˊ","ㄕㄥ","","ㄕㄣˊ","ㄞˋ","ㄕˋ","ㄖㄣˊ",""],"42":["ㄧㄝˊ","ㄙㄨ","ㄗㄞˋ","ㄕㄢ","ㄕㄤˋ","ㄐㄧㄠˋ","ㄉㄠˇ","ㄖㄣˊ","","ㄞˋ","ㄔㄡˊ","ㄉㄧˊ","","ㄨㄟˋ","ㄖㄣˊ","ㄉㄠˇ","ㄍㄠˋ","","ㄅㄚˇ","ㄈㄤˊ","˙ㄗ","ㄍㄞˋ","ㄗㄞˋ","ㄆㄢˊ","ㄕˊ","ㄕㄤˋ",""],"43":["ㄙㄚ","ㄓㄨㄥˇ","˙ㄉㄜ","ㄅㄧˇ","ㄩˋ","","ㄕㄣˊ","˙ㄉㄜ","ㄏㄨㄚˋ","ㄌㄨㄛˋ","ㄗㄞˋ","ㄏㄠˇ","ㄊㄨˇ","ㄌㄧˇ","","ㄐㄧㄡˋ","ㄐㄧㄝˊ","ㄔㄨ","ㄒㄩˇ","ㄉㄨㄛ","ㄍㄨㄛˇ","˙ㄗ",""],"44":["ㄘㄞˊ","ㄓㄨˇ","ㄊㄧㄢ","ㄊㄧㄢ","ㄒㄧㄤˇ","ㄌㄜˋ","","ㄅㄨˋ","ㄌㄧˇ","ㄇㄣˊ","ㄎㄡˇ","˙ㄉㄜ","ㄌㄚ","ㄙㄚ","ㄌㄨˋ","","ㄧㄝˊ","ㄙㄨ","ㄊㄧˊ","ㄒㄧㄥˇ","ㄖㄣˊ","ㄎㄢˋ","ㄓㄨㄥˋ","ㄩㄥˇ","ㄏㄥˊ",""],"45":["ㄒㄧㄠˇ","ㄦˊ","˙ㄗ","ㄏㄨㄚ","ㄍㄨㄤ","ㄑㄧㄢˊ","ㄏㄨㄟˊ","ㄐㄧㄚ","","ㄈㄨˋ","ㄑㄧㄣ","ㄩㄢˇ","ㄩㄢˇ","ㄎㄢˋ","ㄐㄧㄢˋ","ㄐㄧㄡˋ","ㄆㄠˇ","ㄑㄩˋ","ㄅㄠˋ","ㄊㄚ","","ㄨㄟˋ","ㄊㄚ","ㄅㄞˇ","ㄕㄜˋ","ㄧㄢˊ","ㄒㄧˊ",""],"46":["ㄕㄡˋ","ㄕㄤ","˙ㄉㄜ","ㄖㄣˊ","ㄉㄠˇ","ㄗㄞˋ","ㄌㄨˋ","ㄆㄤˊ","","ㄊㄧㄥˊ","ㄒㄧㄚˋ","ㄌㄞˊ","ㄅㄤ","ㄓㄨˋ","ㄊㄚ","˙ㄉㄜ","","ㄕˋ","ㄅㄟˋ","ㄖㄣˊ","ㄎㄢˋ","ㄅㄨˋ","ㄑㄧˇ","˙ㄉㄜ","ㄙㄚ","ㄇㄚˇ","ㄌㄧˋ","ㄧㄚˋ","ㄖㄣˊ",""],"47":["ㄧㄝˊ","ㄙㄨ","ㄗㄞˋ","ㄧㄚˇ","ㄍㄜˋ","ㄐㄧㄥˇ","ㄆㄤˊ","ㄒㄧㄤˋ","ㄙㄚ","ㄇㄚˇ","ㄌㄧˋ","ㄧㄚˋ","ㄈㄨˋ","ㄖㄣˊ","ㄧㄠˋ","ㄕㄨㄟˇ","ㄏㄜ","","ㄍㄠˋ","ㄙㄨˋ","ㄊㄚ","ㄕㄥ","ㄇㄧㄥˋ","˙ㄉㄜ","ㄏㄨㄛˊ","ㄕㄨㄟˇ",""],"48":["ㄇㄣˊ","ㄊㄨˊ","ㄗㄞˋ","ㄅㄠˋ","ㄈㄥ","ㄓㄨㄥ","ㄏㄞˋ","ㄆㄚˋ","","ㄧㄝˊ","ㄙㄨ","ㄑㄧˇ","ㄌㄞˊ","ㄔˋ","ㄗㄜˊ","ㄈㄥ","ㄏㄜˊ","ㄏㄞˇ","","ㄐㄧㄡˋ","ㄉㄚˋ","ㄉㄚˋ","ㄆㄧㄥˊ","ㄐㄧㄥˋ","˙ㄌㄜ",""],"49":["ㄧㄚˊ","ㄌㄨˇ","˙ㄉㄜ","ㄋㄩˇ","ㄦˊ","ㄙˇ","˙ㄌㄜ","","ㄧㄝˊ","ㄙㄨ","ㄌㄚ","˙ㄓㄜ","ㄊㄚ","˙ㄉㄜ","ㄕㄡˇ","ㄐㄧㄠˋ","ㄊㄚ","ㄑㄧˇ","ㄌㄞˊ","","ㄊㄚ","ㄐㄧㄡˋ","ㄏㄨㄛˊ","˙ㄌㄜ",""],"50":["ㄒㄧㄚ","ㄧㄢˇ","˙ㄉㄜ","ㄅㄚ","ㄉㄧˇ","ㄇㄞˇ","ㄉㄚˋ","ㄕㄥ","ㄏㄨ","ㄑㄧㄡˊ","","ㄧㄝˊ","ㄙㄨ","ㄊㄧㄥˊ","ㄒㄧㄚˋ","ㄐㄧㄠˇ","ㄅㄨˋ","","ㄕˇ","ㄊㄚ","ㄔㄨㄥˊ","ㄒㄧㄣ","ㄎㄢˋ","ㄐㄧㄢˋ",""],"51":["ㄧ","ㄍㄜˋ","ㄏㄞˊ","˙ㄗ","ㄒㄧㄢˋ","ㄔㄨ","ㄨˇ","ㄅㄧㄥˇ","ㄦˋ","ㄩˊ","","ㄧㄝˊ","ㄙㄨ","ㄓㄨˋ","ㄒㄧㄝˋ","ㄏㄡˋ","","ㄖㄤˋ","ㄨˇ","ㄑㄧㄢ","ㄖㄣˊ","ㄉㄡ","ㄔ","ㄅㄠˇ","˙ㄌㄜ",""],"52":["ㄧㄝˊ","ㄙㄨ","ㄨㄟˋ","ㄆㄥˊ","ㄧㄡˇ","ㄌㄚ","ㄙㄚ","ㄌㄨˋ","ㄎㄨ","˙ㄌㄜ","","ㄖㄢˊ","ㄏㄡˋ","ㄏㄨ","ㄐㄧㄠˋ","ㄊㄚ","ㄘㄨㄥˊ","ㄈㄣˊ","ㄇㄨˋ","ㄌㄧˇ","ㄔㄨ","ㄌㄞˊ",""],"53":["ㄞˇ","ㄍㄜˋ","˙ㄗ","ㄙㄚ","ㄍㄞ","ㄆㄚˊ","ㄕㄤˋ","ㄙㄤ","ㄕㄨˋ","ㄎㄢˋ","ㄧㄝˊ","ㄙㄨ","","ㄧㄝˊ","ㄙㄨ","ㄑㄩㄝˋ","ㄧㄠˋ","ㄉㄠˋ","ㄊㄚ","ㄐㄧㄚ","ㄗㄨㄛˋ","ㄎㄜˋ","","ㄊㄚ","˙ㄉㄜ","ㄕㄥ","ㄇㄧㄥˋ","ㄧㄣ","ㄘˇ","ㄍㄞˇ","ㄅㄧㄢˋ",""],"54":["ㄧㄝˊ","ㄙㄨ","ㄅㄟˋ","ㄉㄧㄥ","ㄕˊ","ㄗˋ","ㄐㄧㄚˋ","","ㄇㄞˊ","ㄗㄤˋ","","ㄉㄧˋ","ㄙㄢ","ㄊㄧㄢ","ㄈㄣˊ","ㄇㄨˋ","ㄎㄨㄥ","˙ㄌㄜ","","ㄊㄚ","ㄈㄨˋ","ㄏㄨㄛˊ","˙ㄌㄜ",""],"55":["ㄧㄝˊ","ㄙㄨ","ㄕㄥ","ㄊㄧㄢ","ㄏㄡˋ","","ㄕㄥˋ","ㄌㄧㄥˊ","ㄐㄧㄤˋ","ㄌㄧㄣˊ","","ㄇㄣˊ","ㄊㄨˊ","ㄩㄥˇ","ㄍㄢˇ","ㄔㄨㄢˊ","ㄈㄨˊ","ㄧㄣ","","ㄒㄩˇ","ㄉㄨㄛ","ㄖㄣˊ","ㄒㄧㄣˋ","ㄓㄨˇ",""],"56":["ㄒㄧㄣˋ","ㄊㄨˊ","ㄅㄟˋ","ㄎㄨㄥˇ","ㄒㄧㄚˋ","","ㄅㄟˋ","ㄓㄨㄟ","ㄍㄢˇ","","ㄙ","ㄊㄧˊ","ㄈㄢˇ","ㄒㄩㄣˋ","ㄉㄠˋ","","ㄈㄨˊ","ㄧㄣ","ㄑㄩㄝˋ","ㄧㄣ","ㄘˇ","ㄔㄨㄢˊ","ㄉㄜˊ","ㄍㄥˋ","ㄩㄢˇ",""],"57":["ㄅㄧˇ","ㄉㄜˊ","ㄅㄟˋ","ㄍㄨㄢ","ㄐㄧㄣˋ","ㄐㄧㄢ","ㄩˋ","","ㄐㄧㄠˋ","ㄏㄨㄟˋ","ㄨㄟˋ","ㄊㄚ","ㄑㄧㄝ","ㄑㄧㄝ","ㄉㄠˇ","ㄍㄠˋ","","ㄊㄧㄢ","ㄕˇ","ㄉㄚˇ","ㄎㄞ","˙ㄌㄜ","ㄌㄠˊ","ㄇㄣˊ",""],"58":["ㄙㄠˇ","ㄌㄨㄛˊ","ㄗㄞˋ","ㄉㄚˋ","ㄇㄚˇ","ㄕˋ","ㄍㄜˊ","ㄌㄨˋ","ㄕㄤˋ","ㄩˋ","ㄐㄧㄢˋ","ㄈㄨˋ","ㄏㄨㄛˊ","˙ㄉㄜ","ㄧㄝˊ","ㄙㄨ","","ㄘㄨㄥˊ","ㄅㄧ","ㄆㄛˋ","ㄓㄜˇ","ㄅㄧㄢˋ","ㄔㄥˊ","ㄔㄨㄢˊ","ㄉㄠˋ","ㄓㄜˇ",""],"59":["ㄅㄠˇ","ㄌㄨㄛˊ","ㄗㄨㄛˋ","ㄔㄨㄢˊ","ㄗㄡˇ","ㄅㄧㄢˋ","ㄍㄜˋ","ㄉㄧˋ","ㄔㄨㄢˊ","ㄈㄨˊ","ㄧㄣ","","ㄩˋ","ㄉㄠˋ","ㄐㄧㄢ","ㄩˋ","","ㄉㄧˋ","ㄓㄣˋ","ㄏㄜˊ","ㄔㄨㄢˊ","ㄋㄢˊ","","ㄕㄣˊ","ㄧ","ㄌㄨˋ","ㄅㄠˇ","ㄕㄡˇ",""],"60":["ㄧㄝˊ","ㄙㄨ","ㄨㄟˋ","ㄨㄛˇ","˙ㄇㄣ","ㄩˋ","ㄅㄟˋ","ㄉㄧˋ","ㄈㄤ","","ㄋㄚˋ","ㄌㄧˇ","ㄅㄨˋ","ㄗㄞˋ","ㄧㄡˇ","ㄧㄢˇ","ㄌㄟˋ","","ㄕㄣˊ","ㄧㄠˋ","ㄩˇ","ㄖㄣˊ","ㄊㄨㄥˊ","ㄓㄨˋ",""]},"v":{"1":["ㄑㄧˇ","ㄔㄨ","","ㄕㄣˊ","ㄔㄨㄤˋ","ㄗㄠˋ","ㄊㄧㄢ","ㄉㄧˋ",""],"2":["ㄨㄛˇ","ㄧㄡˋ","ㄧㄠˋ","ㄐㄧㄠˋ","ㄋㄧˇ","ㄏㄜˊ","ㄋㄩˇ","ㄖㄣˊ","ㄅㄧˇ","ㄘˇ","ㄨㄟˊ","ㄔㄡˊ","","ㄋㄧˇ","˙ㄉㄜ","ㄏㄡˋ","ㄧˋ","ㄏㄜˊ","ㄋㄩˇ","ㄖㄣˊ","˙ㄉㄜ","ㄏㄡˋ","ㄧˋ","ㄧㄝˇ","ㄅㄧˇ","ㄘˇ","ㄨㄟˊ","ㄔㄡˊ","","ㄋㄩˇ","ㄖㄣˊ","˙ㄉㄜ","ㄏㄡˋ","ㄧˋ","ㄧㄠˋ","ㄕㄤ","ㄋㄧˇ","˙ㄉㄜ","ㄊㄡˊ","","ㄋㄧˇ","ㄧㄠˋ","ㄕㄤ","ㄊㄚ","˙ㄉㄜ","ㄐㄧㄠˇ","ㄍㄣ",""],"3":["ㄨㄛˇ","ㄅㄚˇ","ㄏㄨㄥˊ","ㄈㄤˋ","ㄗㄞˋ","ㄩㄣˊ","ㄘㄞˇ","ㄓㄨㄥ","","ㄓㄜˋ","ㄐㄧㄡˋ","ㄎㄜˇ","ㄗㄨㄛˋ","ㄨㄛˇ","ㄩˇ","ㄉㄧˋ","ㄌㄧˋ","ㄩㄝ","˙ㄉㄜ","ㄐㄧˋ","ㄏㄠˋ","˙ㄌㄜ",""],"4":["ㄩˊ","ㄕˋ","ㄌㄧㄥˇ","ㄊㄚ","ㄗㄡˇ","ㄉㄠˋ","ㄨㄞˋ","ㄅㄧㄢ","","ㄕㄨㄛ","","","ㄋㄧˇ","ㄒㄧㄤˋ","ㄊㄧㄢ","ㄍㄨㄢ","ㄎㄢˋ","","ㄕㄨˇ","ㄙㄨㄢˋ","ㄓㄨㄥˋ","ㄒㄧㄥ","","ㄋㄥˊ","ㄕㄨˇ","˙ㄉㄜ","ㄍㄨㄛˋ","ㄌㄞˊ","˙ㄇㄚ","","","ㄧㄡˋ","ㄉㄨㄟˋ","ㄊㄚ","ㄕㄨㄛ","","","ㄋㄧˇ","˙ㄉㄜ","ㄏㄡˋ","ㄧˋ","ㄐㄧㄤ","ㄧㄠˋ","ㄖㄨˊ","ㄘˇ","",""],"5":["ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄦˊ","","ㄕㄣˊ","ㄅㄧˋ","ㄗˋ","ㄐㄧˇ","ㄩˋ","ㄅㄟˋ","ㄗㄨㄛˋ","ㄈㄢˊ","ㄐㄧˋ","˙ㄉㄜ","ㄧㄤˊ","ㄍㄠ","","","ㄩˊ","ㄕˋ","ㄦˋ","ㄖㄣˊ","ㄊㄨㄥˊ","ㄒㄧㄥˊ",""],"6":["ㄨㄛˇ","ㄧㄝˇ","ㄩˇ","ㄋㄧˇ","ㄊㄨㄥˊ","ㄗㄞˋ","","ㄋㄧˇ","ㄨˊ","ㄌㄨㄣˋ","ㄨㄤˇ","ㄋㄚˇ","ㄌㄧˇ","ㄑㄩˋ","","ㄨㄛˇ","ㄅㄧˋ","ㄅㄠˇ","ㄧㄡˋ","ㄋㄧˇ","","ㄌㄧㄥˇ","ㄋㄧˇ","ㄍㄨㄟ","ㄏㄨㄟˊ","ㄓㄜˋ","ㄉㄧˋ","","ㄗㄨㄥˇ","ㄅㄨˋ","ㄌㄧˊ","ㄑㄧˋ","ㄋㄧˇ","","ㄓˊ","ㄉㄠˋ","ㄨㄛˇ","ㄔㄥˊ","ㄑㄩㄢˊ","˙ㄌㄜ","ㄒㄧㄤˋ","ㄋㄧˇ","ㄙㄨㄛˇ","ㄧㄥ","ㄒㄩˇ","˙ㄉㄜ",""],"7":["ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ","ㄩㄢˊ","ㄌㄞˊ","ㄞˋ","ㄩㄝ","ㄙㄜˋ","ㄍㄨㄛˋ","ㄩˊ","ㄞˋ","ㄊㄚ","˙ㄉㄜ","ㄓㄨㄥˋ","˙ㄗ","","ㄧㄣ","ㄨㄟˋ","ㄩㄝ","ㄙㄜˋ","ㄕˋ","ㄊㄚ","ㄋㄧㄢˊ","ㄌㄠˇ","ㄕㄥ","˙ㄉㄜ","","ㄊㄚ","ㄍㄟˇ","ㄩㄝ","ㄙㄜˋ","ㄗㄨㄛˋ","˙ㄌㄜ","ㄧ","ㄐㄧㄢˋ","ㄘㄞˇ","ㄧ",""],"8":["ㄘㄨㄥˊ","ㄑㄧㄢˊ","ㄋㄧˇ","˙ㄇㄣ","˙ㄉㄜ","ㄧˋ","˙ㄙ","ㄕˋ","ㄧㄠˋ","ㄏㄞˋ","ㄨㄛˇ","","ㄉㄢˋ","ㄕㄣˊ","˙ㄉㄜ","ㄧˋ","˙ㄙ","ㄩㄢˊ","ㄕˋ","ㄏㄠˇ","˙ㄉㄜ","","ㄧㄠˋ","ㄅㄠˇ","ㄑㄩㄢˊ","ㄒㄩˇ","ㄉㄨㄛ","ㄖㄣˊ","˙ㄉㄜ","ㄒㄧㄥˋ","ㄇㄧㄥˋ","","ㄔㄥˊ","ㄐㄧㄡˋ","ㄐㄧㄣ","ㄖˋ","˙ㄉㄜ","ㄍㄨㄤ","ㄐㄧㄥˇ",""],"9":["ㄏㄞˊ","˙ㄗ","ㄐㄧㄢˋ","ㄓㄤˇ","","ㄈㄨˋ","ㄖㄣˊ","ㄅㄚˇ","ㄊㄚ","ㄉㄞˋ","ㄉㄠˋ","ㄈㄚˇ","ㄌㄠˇ","˙ㄉㄜ","ㄋㄩˇ","ㄦˊ","ㄋㄚˋ","ㄌㄧˇ","","ㄐㄧㄡˋ","ㄗㄨㄛˋ","˙ㄌㄜ","ㄊㄚ","˙ㄉㄜ","ㄦˊ","˙ㄗ","","ㄊㄚ","ㄍㄟˇ","ㄏㄞˊ","˙ㄗ","ㄑㄧˇ","ㄇㄧㄥˊ","ㄐㄧㄠˋ","ㄇㄛˊ","ㄒㄧ","","ㄧˋ","˙ㄙ","ㄕㄨㄛ","","","ㄧㄣ","ㄨㄛˇ","ㄅㄚˇ","ㄊㄚ","ㄘㄨㄥˊ","ㄕㄨㄟˇ","ㄌㄧˇ","ㄌㄚ","ㄔㄨ","ㄌㄞˊ","",""],"10":["ㄕㄣˊ","ㄕㄨㄛ","","","ㄅㄨˋ","ㄧㄠˋ","ㄐㄧㄣˋ","ㄑㄧㄢˊ","ㄌㄞˊ","","ㄉㄤ","ㄅㄚˇ","ㄋㄧˇ","ㄐㄧㄠˇ","ㄕㄤˋ","˙ㄉㄜ","ㄒㄧㄝˊ","ㄊㄨㄛ","ㄒㄧㄚˋ","ㄌㄞˊ","","ㄧㄣ","ㄨㄟˋ","ㄋㄧˇ","ㄙㄨㄛˇ","ㄓㄢˋ","ㄓ","ㄉㄧˋ","ㄕˋ","ㄕㄥˋ","ㄉㄧˋ","",""],"11":["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄅㄧˋ","ㄨㄟˋ","ㄋㄧˇ","˙ㄇㄣ","ㄓㄥ","ㄓㄢˋ","","ㄋㄧˇ","˙ㄇㄣ","ㄓˇ","ㄍㄨㄢˇ","ㄐㄧㄥˋ","ㄇㄛˋ","","ㄅㄨˋ","ㄧㄠˋ","ㄗㄨㄛˋ","ㄕㄥ",""],"12":["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄉㄨㄟˋ","ㄇㄛˊ","ㄒㄧ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄧㄠˋ","ㄐㄧㄤ","ㄌㄧㄤˊ","ㄕˊ","ㄘㄨㄥˊ","ㄊㄧㄢ","ㄐㄧㄤˋ","ㄍㄟˇ","ㄋㄧˇ","˙ㄇㄣ","","ㄅㄞˇ","ㄒㄧㄥˋ","ㄎㄜˇ","ㄧˇ","ㄔㄨ","ㄑㄩˋ","","ㄇㄟˇ","ㄊㄧㄢ","ㄕㄡ","ㄇㄟˇ","ㄊㄧㄢ","˙ㄉㄜ","ㄈㄣˋ","","ㄨㄛˇ","ㄏㄠˇ","ㄕˋ","ㄧㄢˋ","ㄊㄚ","˙ㄇㄣ","ㄗㄨㄣ","ㄅㄨˋ","ㄗㄨㄣ","ㄨㄛˇ","˙ㄉㄜ","ㄈㄚˇ","ㄉㄨˋ",""],"13":["ㄨㄛˇ","ㄑㄧˇ","ㄇㄟˊ","ㄧㄡˇ","ㄈㄣ","ㄈㄨˋ","ㄋㄧˇ","˙ㄇㄚ","","ㄋㄧˇ","ㄉㄤ","ㄍㄤ","ㄑㄧㄤˊ","ㄓㄨㄤˋ","ㄉㄢˇ","","ㄅㄨˋ","ㄧㄠˋ","ㄐㄩˋ","ㄆㄚˋ","","ㄧㄝˇ","ㄅㄨˋ","ㄧㄠˋ","ㄐㄧㄥ","ㄏㄨㄤˊ","","ㄧㄣ","ㄨㄟˋ","ㄋㄧˇ","ㄨˊ","ㄌㄨㄣˋ","ㄨㄤˇ","ㄋㄚˇ","ㄌㄧˇ","ㄑㄩˋ","","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","","ㄋㄧˇ","˙ㄉㄜ","ㄕㄣˊ","ㄅㄧˋ","ㄩˇ","ㄋㄧˇ","ㄊㄨㄥˊ","ㄗㄞˋ",""],"14":["ㄕㄣ","ㄙㄨㄣ","ㄑㄧㄡˊ","ㄍㄠˋ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄕㄨㄛ","","","ㄓㄨˇ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","˙ㄚ","","ㄑㄧㄡˊ","ㄋㄧˇ","ㄐㄩㄢˋ","ㄋㄧㄢˋ","ㄨㄛˇ","","ㄕㄣˊ","˙ㄚ","","ㄑㄧㄡˊ","ㄋㄧˇ","ㄘˋ","ㄨㄛˇ","ㄓㄜˋ","ㄧ","ㄘˋ","˙ㄉㄜ","ㄌㄧˋ","ㄌㄧㄤˋ","","ㄕˇ","ㄨㄛˇ","ㄗㄞˋ","ㄈㄟ","ㄌㄧˋ","ㄕˋ","ㄖㄣˊ","ㄕㄣ","ㄕㄤˋ","ㄅㄠˋ","ㄋㄚˋ","ㄨㄢ","ㄨㄛˇ","ㄕㄨㄤ","ㄧㄢˇ","˙ㄉㄜ","ㄔㄡˊ","",""],"15":["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄉㄨㄟˋ","ㄐㄧ","ㄉㄧㄢ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄧㄠˋ","ㄩㄥˋ","ㄓㄜˋ","ㄊㄧㄢˇ","ㄕㄨㄟˇ","˙ㄉㄜ","ㄙㄢ","ㄅㄞˇ","ㄖㄣˊ","ㄓㄥˇ","ㄐㄧㄡˋ","ㄋㄧˇ","˙ㄇㄣ","","ㄐㄧㄤ","ㄇㄧˇ","ㄉㄧㄢ","ㄖㄣˊ","ㄐㄧㄠ","ㄗㄞˋ","ㄋㄧˇ","ㄕㄡˇ","ㄓㄨㄥ","","ㄑㄧˊ","ㄩˊ","˙ㄉㄜ","ㄖㄣˊ","ㄉㄡ","ㄎㄜˇ","ㄧˇ","ㄍㄜˋ","ㄍㄨㄟ","ㄍㄜˋ","ㄔㄨˋ","ㄑㄩˋ","",""],"16":["ㄌㄨˋ","ㄉㄜˊ","ㄕㄨㄛ","","","ㄅㄨˋ","ㄧㄠˋ","ㄘㄨㄟ","ㄨㄛˇ","ㄏㄨㄟˊ","ㄑㄩˋ","ㄅㄨˋ","ㄍㄣ","ㄙㄨㄟˊ","ㄋㄧˇ","","ㄋㄧˇ","ㄨㄤˇ","ㄋㄚˇ","ㄌㄧˇ","ㄑㄩˋ","","ㄨㄛˇ","ㄧㄝˇ","ㄨㄤˇ","ㄋㄚˋ","ㄌㄧˇ","ㄑㄩˋ","","ㄋㄧˇ","ㄗㄞˋ","ㄋㄚˇ","ㄌㄧˇ","ㄓㄨˋ","ㄙㄨˋ","","ㄨㄛˇ","ㄧㄝˇ","ㄗㄞˋ","ㄋㄚˋ","ㄌㄧˇ","ㄓㄨˋ","ㄙㄨˋ","","ㄋㄧˇ","˙ㄉㄜ","ㄍㄨㄛˊ","ㄐㄧㄡˋ","ㄕˋ","ㄨㄛˇ","˙ㄉㄜ","ㄍㄨㄛˊ","","ㄋㄧˇ","˙ㄉㄜ","ㄕㄣˊ","ㄐㄧㄡˋ","ㄕˋ","ㄨㄛˇ","˙ㄉㄜ","ㄕㄣˊ",""],"17":["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄧㄡˋ","ㄌㄞˊ","ㄓㄢˋ","˙ㄓㄜ","","ㄒㄧㄤˋ","ㄑㄧㄢˊ","ㄙㄢ","ㄘˋ","ㄏㄨ","ㄏㄨㄢˋ","ㄕㄨㄛ","","","ㄙㄚ","ㄇㄨˇ","ㄦˇ","˙ㄚ","","ㄙㄚ","ㄇㄨˇ","ㄦˇ","˙ㄚ","","","ㄙㄚ","ㄇㄨˇ","ㄦˇ","ㄏㄨㄟˊ","ㄉㄚˊ","ㄕㄨㄛ","","","ㄑㄧㄥˇ","ㄕㄨㄛ","","ㄆㄨˊ","ㄖㄣˊ","ㄐㄧㄥˋ","ㄊㄧㄥ","",""],"18":["ㄙㄚ","ㄇㄨˇ","ㄦˇ","ㄕㄨㄛ","","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄒㄧˇ","ㄩㄝˋ","ㄈㄢˊ","ㄐㄧˋ","ㄏㄜˊ","ㄆㄧㄥˊ","ㄢ","ㄐㄧˋ","","ㄑㄧˇ","ㄖㄨˊ","ㄒㄧˇ","ㄩㄝˋ","ㄖㄣˊ","ㄊㄧㄥ","ㄘㄨㄥˊ","ㄊㄚ","˙ㄉㄜ","ㄏㄨㄚˋ","˙ㄋㄜ","","ㄊㄧㄥ","ㄇㄧㄥˋ","ㄕㄥˋ","ㄩˊ","ㄒㄧㄢˋ","ㄐㄧˋ","","ㄕㄨㄣˋ","ㄘㄨㄥˊ","ㄕㄥˋ","ㄩˊ","ㄍㄨㄥ","ㄧㄤˊ","˙ㄉㄜ","ㄓ","ㄧㄡˊ",""],"19":["ㄉㄚˋ","ㄨㄟˋ","ㄉㄨㄟˋ","ㄈㄟ","ㄌㄧˋ","ㄕˋ","ㄖㄣˊ","ㄕㄨㄛ","","","ㄋㄧˇ","ㄌㄞˊ","ㄍㄨㄥ","ㄐㄧ","ㄨㄛˇ","","ㄕˋ","ㄎㄠˋ","˙ㄓㄜ","ㄉㄠ","ㄑㄧㄤ","ㄏㄜˊ","ㄊㄨㄥˊ","ㄐㄧˇ","","ㄨㄛˇ","ㄌㄞˊ","ㄍㄨㄥ","ㄐㄧ","ㄋㄧˇ","","ㄕˋ","ㄎㄠˋ","˙ㄓㄜ","ㄨㄢˋ","ㄐㄩㄣ","ㄓ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","˙ㄉㄜ","ㄇㄧㄥˊ","","ㄐㄧㄡˋ","ㄕˋ","ㄋㄧˇ","ㄙㄨㄛˇ","ㄋㄨˋ","ㄇㄚˋ","ㄉㄞˋ","ㄌㄧㄥˇ","ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ","ㄐㄩㄣ","ㄉㄨㄟˋ","˙ㄉㄜ","ㄕㄣˊ",""],"20":["ㄉㄨㄟˋ","ㄍㄣ","ㄙㄨㄟˊ","ㄊㄚ","˙ㄉㄜ","ㄖㄣˊ","ㄕㄨㄛ","","","ㄨㄛˇ","˙ㄉㄜ","ㄓㄨˇ","ㄋㄞˇ","ㄕˋ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","˙ㄉㄜ","ㄕㄡˋ","ㄍㄠ","ㄓㄜˇ","","ㄨㄛˇ","ㄗㄞˋ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄇㄧㄢˋ","ㄑㄧㄢˊ","ㄨㄢˋ","ㄅㄨˋ","ㄍㄢˇ","ㄕㄣ","ㄕㄡˇ","ㄏㄞˋ","ㄊㄚ","","ㄧㄣ","ㄊㄚ","ㄕˋ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","˙ㄉㄜ","ㄕㄡˋ","ㄍㄠ","ㄓㄜˇ","",""],"21":["ㄉㄚˋ","ㄨㄟˋ","ㄉㄨㄟˋ","ㄋㄚˊ","ㄉㄢ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄉㄜˊ","ㄗㄨㄟˋ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","˙ㄌㄜ","","","ㄋㄚˊ","ㄉㄢ","ㄕㄨㄛ","","","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄧˇ","ㄐㄧㄥ","ㄔㄨˊ","ㄉㄧㄠˋ","ㄋㄧˇ","˙ㄉㄜ","ㄗㄨㄟˋ","","ㄋㄧˇ","ㄅㄧˋ","ㄅㄨˋ","ㄓˋ","ㄩˊ","ㄙˇ",""],"22":["ㄙㄨㄛˇ","ㄧˇ","ㄑㄧㄡˊ","ㄋㄧˇ","ㄘˋ","ㄨㄛˇ","ㄓˋ","ㄏㄨㄟˋ","","ㄎㄜˇ","ㄧˇ","ㄆㄢˋ","ㄉㄨㄢˋ","ㄋㄧˇ","˙ㄉㄜ","ㄇㄧㄣˊ","","ㄋㄥˊ","ㄅㄧㄢˋ","ㄅㄧㄝˊ","ㄕˋ","ㄈㄟ","","ㄅㄨˋ","ㄖㄢˊ","","ㄕㄨㄟˊ","ㄋㄥˊ","ㄆㄢˋ","ㄉㄨㄢˋ","ㄓㄜˋ","ㄓㄨㄥˋ","ㄉㄨㄛ","˙ㄉㄜ","ㄇㄧㄣˊ","˙ㄋㄜ",""],"23":["ㄊㄚ","ㄑㄧˊ","ㄉㄠˇ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄐㄧㄡˋ","ㄩㄣˇ","ㄓㄨㄣˇ","ㄊㄚ","˙ㄉㄜ","ㄑㄧˊ","ㄑㄧㄡˊ","","ㄔㄨㄟˊ","ㄊㄧㄥ","ㄊㄚ","˙ㄉㄜ","ㄉㄠˇ","ㄍㄠˋ","","ㄕˇ","ㄊㄚ","ㄍㄨㄟ","ㄏㄨㄟˊ","ㄧㄝˊ","ㄌㄨˋ","ㄙㄚ","ㄌㄥˇ","","ㄖㄥˊ","ㄗㄨㄛˋ","ㄍㄨㄛˊ","ㄨㄟˋ","","ㄇㄚˇ","ㄋㄚˊ","ㄒㄧ","ㄓㄜˋ","ㄘㄞˊ","ㄓ","ㄉㄠˋ","ㄨㄟˊ","ㄉㄨˊ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄕˋ","ㄕㄣˊ",""],"24":["ㄓㄨㄥˋ","ㄇㄧㄣˊ","ㄎㄢˋ","ㄐㄧㄢˋ","˙ㄌㄜ","","ㄐㄧㄡˋ","ㄈㄨˇ","ㄈㄨˊ","ㄗㄞˋ","ㄉㄧˋ","","ㄕㄨㄛ","","","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄕˋ","ㄕㄣˊ","","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄕˋ","ㄕㄣˊ","",""],"25":["ㄩˊ","ㄕˋ","ㄋㄞˇ","ㄇㄢˋ","ㄒㄧㄚˋ","ㄑㄩˋ","","ㄓㄠˋ","˙ㄓㄜ","ㄕㄣˊ","ㄖㄣˊ","˙ㄉㄜ","ㄏㄨㄚˋ","","ㄗㄞˋ","ㄩㄝ","ㄉㄢˋ","ㄏㄜˊ","ㄌㄧˇ","ㄇㄨˋ","ㄩˋ","ㄑㄧ","ㄏㄨㄟˊ","","ㄊㄚ","˙ㄉㄜ","ㄖㄡˋ","ㄈㄨˋ","ㄩㄢˊ","","ㄏㄠˇ","ㄒㄧㄤˋ","ㄒㄧㄠˇ","ㄏㄞˊ","˙ㄗ","˙ㄉㄜ","ㄖㄡˋ","","ㄊㄚ","ㄐㄧㄡˋ","ㄐㄧㄝˊ","ㄐㄧㄥˋ","˙ㄌㄜ",""],"26":["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄢ","ㄆㄞˊ","ㄧ","ㄊㄧㄠˊ","ㄉㄚˋ","ㄩˊ","ㄊㄨㄣ","˙ㄌㄜ","ㄩㄝ","ㄋㄚˊ","","ㄊㄚ","ㄗㄞˋ","ㄩˊ","ㄈㄨˋ","ㄓㄨㄥ","ㄙㄢ","ㄖˋ","ㄙㄢ","ㄧㄝˋ",""],"27":["ㄧㄣ","ㄧㄡˇ","ㄧ","ㄧㄥ","ㄏㄞˊ","ㄨㄟˋ","ㄨㄛˇ","˙ㄇㄣ","ㄦˊ","ㄕㄥ","","ㄧㄡˇ","ㄧ","˙ㄗ","ㄘˋ","ㄍㄟˇ","ㄨㄛˇ","˙ㄇㄣ","","ㄓㄥˋ","ㄑㄩㄢˊ","ㄅㄧˋ","ㄉㄢ","ㄗㄞˋ","ㄊㄚ","˙ㄉㄜ","ㄐㄧㄢ","ㄊㄡˊ","ㄕㄤˋ","","ㄊㄚ","ㄇㄧㄥˊ","ㄔㄥ","ㄨㄟˊ","","ㄑㄧˊ","ㄇㄧㄠˋ","ㄘㄜˋ","ㄕˋ","","ㄑㄩㄢˊ","ㄋㄥˊ","˙ㄉㄜ","ㄕㄣˊ","","ㄩㄥˇ","ㄗㄞˋ","˙ㄉㄜ","ㄈㄨˋ","","ㄏㄜˊ","ㄆㄧㄥˊ","˙ㄉㄜ","ㄐㄩㄣ","",""],"28":["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄕㄨㄛ","","ㄨㄛˇ","ㄓ","ㄉㄠˋ","ㄨㄛˇ","ㄒㄧㄤˋ","ㄋㄧˇ","˙ㄇㄣ","ㄙㄨㄛˇ","ㄏㄨㄞˊ","˙ㄉㄜ","ㄧˋ","ㄋㄧㄢˋ","ㄕˋ","ㄘˋ","ㄆㄧㄥˊ","ㄢ","˙ㄉㄜ","ㄧˋ","ㄋㄧㄢˋ","","ㄅㄨˋ","ㄕˋ","ㄐㄧㄤˋ","ㄗㄞ","ㄏㄨㄛˋ","˙ㄉㄜ","ㄧˋ","ㄋㄧㄢˋ","","ㄧㄠˋ","ㄐㄧㄠˋ","ㄋㄧˇ","˙ㄇㄣ","ㄇㄛˋ","ㄏㄡˋ","ㄧㄡˇ","ㄓˇ","ㄨㄤˋ",""],"29":["ㄓㄨˇ","ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄉㄨㄟˋ","ㄓㄜˋ","ㄒㄧㄝ","ㄏㄞˊ","ㄍㄨˇ","ㄖㄨˊ","ㄘˇ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄅㄧˋ","ㄕˇ","ㄑㄧˋ","ㄒㄧ","ㄐㄧㄣˋ","ㄖㄨˋ","ㄋㄧˇ","˙ㄇㄣ","ㄌㄧˇ","ㄇㄧㄢˋ","","ㄋㄧˇ","˙ㄇㄣ","ㄐㄧㄡˋ","ㄧㄠˋ","ㄏㄨㄛˊ","˙ㄌㄜ",""],"30":["ㄘˇ","ㄕˊ","ㄋㄧˇ","ㄖㄨㄛˋ","ㄅㄧˋ","ㄎㄡˇ","ㄅㄨˋ","ㄧㄢˊ","","ㄧㄡˊ","ㄉㄚˋ","ㄖㄣˊ","ㄅㄧˋ","ㄘㄨㄥˊ","ㄅㄧㄝˊ","ㄔㄨˋ","ㄉㄜˊ","ㄐㄧㄝˇ","ㄊㄨㄛ","","ㄇㄥˊ","ㄓㄥˇ","ㄐㄧㄡˋ","","ㄋㄧˇ","ㄏㄜˊ","ㄋㄧˇ","ㄈㄨˋ","ㄐㄧㄚ","ㄅㄧˋ","ㄓˋ","ㄇㄧㄝˋ","ㄨㄤˊ","","ㄧㄢ","ㄓ","ㄋㄧˇ","ㄉㄜˊ","˙ㄌㄜ","ㄨㄤˊ","ㄏㄡˋ","˙ㄉㄜ","ㄨㄟˋ","ㄈㄣˋ","ㄅㄨˋ","ㄕˋ","ㄨㄟˋ","ㄒㄧㄢˋ","ㄐㄧㄣ","˙ㄉㄜ","ㄐㄧ","ㄏㄨㄟˋ","˙ㄇㄚ",""],"31":["ㄉㄢˋ","ㄧˇ","ㄌㄧˇ","ㄑㄩㄝˋ","ㄌㄧˋ","ㄓˋ","ㄅㄨˋ","ㄧˇ","ㄨㄤˊ","˙ㄉㄜ","ㄕㄢˋ","ㄏㄜˊ","ㄨㄤˊ","ㄙㄨㄛˇ","ㄧㄣˇ","˙ㄉㄜ","ㄐㄧㄡˇ","ㄉㄧㄢˋ","ㄨ","ㄗˋ","ㄐㄧˇ","","ㄙㄨㄛˇ","ㄧˇ","ㄑㄧㄡˊ","ㄊㄞˋ","ㄐㄧㄢ","ㄓㄤˇ","ㄖㄨㄥˊ","ㄊㄚ","ㄅㄨˋ","ㄉㄧㄢˋ","ㄨ","ㄗˋ","ㄐㄧˇ",""],"32":["ㄓˇ","ㄧㄡˇ","ㄧ","ㄨㄟˋ","ㄗㄞˋ","ㄊㄧㄢ","ㄕㄤˋ","˙ㄉㄜ","ㄕㄣˊ","ㄋㄥˊ","ㄒㄧㄢˇ","ㄇㄧㄥˊ","ㄠˋ","ㄇㄧˋ","˙ㄉㄜ","ㄕˋ",""],"33":["ㄐㄧˊ","ㄅㄧㄢˋ","ㄖㄨˊ","ㄘˇ","","ㄨㄛˇ","˙ㄇㄣ","ㄙㄨㄛˇ","ㄕˋ","ㄈㄥˋ","˙ㄉㄜ","ㄕㄣˊ","ㄋㄥˊ","ㄐㄧㄤ","ㄨㄛˇ","˙ㄇㄣ","ㄘㄨㄥˊ","ㄌㄧㄝˋ","ㄏㄨㄛˇ","˙ㄉㄜ","ㄧㄠˊ","ㄓㄨㄥ","ㄐㄧㄡˋ","ㄔㄨ","ㄌㄞˊ","","ㄨㄤˊ","˙ㄚ","","ㄊㄚ","ㄧㄝˇ","ㄅㄧˋ","ㄐㄧㄡˋ","ㄨㄛˇ","˙ㄇㄣ","ㄊㄨㄛ","ㄌㄧˊ","ㄋㄧˇ","˙ㄉㄜ","ㄕㄡˇ",""],"34":["ㄨㄛˇ","˙ㄉㄜ","ㄕㄣˊ","ㄔㄞ","ㄑㄧㄢˇ","ㄕˇ","ㄓㄜˇ","","ㄈㄥ","ㄓㄨˋ","ㄕ","˙ㄗ","˙ㄉㄜ","ㄎㄡˇ","","ㄐㄧㄠˋ","ㄕ","˙ㄗ","ㄅㄨˋ","ㄕㄤ","ㄨㄛˇ","","ㄧㄣ","ㄨㄛˇ","ㄗㄞˋ","ㄕㄣˊ","ㄇㄧㄢˋ","ㄑㄧㄢˊ","ㄨˊ","ㄍㄨ","","ㄨㄛˇ","ㄗㄞˋ","ㄨㄤˊ","ㄇㄧㄢˋ","ㄑㄧㄢˊ","ㄧㄝˇ","ㄇㄟˊ","ㄧㄡˇ","ㄒㄧㄥˊ","ㄍㄨㄛˋ","ㄎㄨㄟ","ㄙㄨㄣˇ","˙ㄉㄜ","ㄕˋ",""],"35":["ㄨㄛˇ","ㄏㄨㄟˊ","ㄉㄚˊ","ㄊㄚ","˙ㄇㄣ","ㄕㄨㄛ","","","ㄊㄧㄢ","ㄕㄤˋ","˙ㄉㄜ","ㄕㄣˊ","ㄅㄧˋ","ㄕˇ","ㄨㄛˇ","˙ㄇㄣ","ㄏㄥ","ㄊㄨㄥ","","ㄨㄛˇ","˙ㄇㄣ","ㄗㄨㄛˋ","ㄊㄚ","ㄆㄨˊ","ㄖㄣˊ","˙ㄉㄜ","","ㄧㄠˋ","ㄑㄧˇ","ㄌㄞˊ","ㄐㄧㄢˋ","ㄗㄠˋ","","ㄋㄧˇ","˙ㄇㄣ","ㄑㄩㄝˋ","ㄗㄞˋ","ㄧㄝˊ","ㄌㄨˋ","ㄙㄚ","ㄌㄥˇ","ㄨˊ","ㄈㄣ","","ㄨˊ","ㄑㄩㄢˊ","","ㄨˊ","ㄐㄧˋ","ㄋㄧㄢˋ","",""],"36":["ㄧㄣ","ㄐㄧㄣ","ㄊㄧㄢ","ㄗㄞˋ","ㄉㄚˋ","ㄨㄟˋ","˙ㄉㄜ","ㄔㄥˊ","ㄌㄧˇ","","ㄨㄟˋ","ㄋㄧˇ","˙ㄇㄣ","ㄕㄥ","˙ㄌㄜ","ㄐㄧㄡˋ","ㄓㄨˇ","","ㄐㄧㄡˋ","ㄕˋ","ㄓㄨˇ","ㄐㄧ","ㄉㄨ",""],"37":["ㄓㄜˋ","ㄖㄣˊ","ㄐㄧㄡˋ","ㄕˋ","ㄒㄧㄢ","ㄓ","ㄧˇ","ㄙㄞˋ","ㄧㄚˋ","ㄙㄨㄛˇ","ㄕㄨㄛ","˙ㄉㄜ","","ㄊㄚ","ㄕㄨㄛ","","","ㄗㄞˋ","ㄎㄨㄤˋ","ㄧㄝˇ","ㄧㄡˇ","ㄖㄣˊ","ㄕㄥ","ㄏㄢˇ","˙ㄓㄜ","ㄕㄨㄛ","","ㄩˋ","ㄅㄟˋ","ㄓㄨˇ","˙ㄉㄜ","ㄉㄠˋ","","ㄒㄧㄡ","ㄓˊ","ㄊㄚ","˙ㄉㄜ","ㄌㄨˋ","",""],"38":["ㄧㄝˊ","ㄙㄨ","ㄑㄩㄝˋ","ㄏㄨㄟˊ","ㄉㄚˊ","ㄕㄨㄛ","","","ㄐㄧㄥ","ㄕㄤˋ","ㄐㄧˋ","˙ㄓㄜ","ㄕㄨㄛ","","ㄖㄣˊ","ㄏㄨㄛˊ","˙ㄓㄜ","","ㄅㄨˋ","ㄕˋ","ㄉㄢ","ㄎㄠˋ","ㄕˊ","ㄨˋ","","ㄋㄞˇ","ㄕˋ","ㄎㄠˋ","ㄕㄣˊ","ㄎㄡˇ","ㄌㄧˇ","ㄙㄨㄛˇ","ㄔㄨ","˙ㄉㄜ","ㄧ","ㄑㄧㄝˋ","ㄏㄨㄚˋ","",""],"39":["ㄧㄝˊ","ㄙㄨ","ㄉㄨㄟˋ","ㄊㄚ","˙ㄇㄣ","ㄕㄨㄛ","","","ㄌㄞˊ","ㄍㄣ","ㄘㄨㄥˊ","ㄨㄛˇ","","ㄨㄛˇ","ㄧㄠˋ","ㄐㄧㄠˋ","ㄋㄧˇ","˙ㄇㄣ","ㄉㄜˊ","ㄖㄣˊ","ㄖㄨˊ","ㄉㄜˊ","ㄩˊ","ㄧ","ㄧㄤˋ","",""],"40":["ㄧㄝˊ","ㄙㄨ","ㄐㄧㄢˋ","ㄊㄚ","˙ㄇㄣ","˙ㄉㄜ","ㄒㄧㄣˋ","ㄒㄧㄣ","","ㄐㄧㄡˋ","ㄉㄨㄟˋ","ㄊㄢ","˙ㄗ","ㄕㄨㄛ","","","ㄒㄧㄠˇ","˙ㄗ","","ㄋㄧˇ","˙ㄉㄜ","ㄗㄨㄟˋ","ㄕㄜˋ","˙ㄌㄜ","",""],"41":["ㄕㄣˊ","ㄞˋ","ㄕˋ","ㄖㄣˊ","","ㄕㄣˋ","ㄓˋ","ㄐㄧㄤ","ㄊㄚ","˙ㄉㄜ","ㄉㄨˊ","ㄕㄥ","˙ㄗ","ㄘˋ","ㄍㄟˇ","ㄊㄚ","˙ㄇㄣ","","ㄐㄧㄠˋ","ㄧ","ㄑㄧㄝˋ","ㄒㄧㄣˋ","ㄊㄚ","˙ㄉㄜ","","ㄅㄨˋ","ㄓˋ","ㄇㄧㄝˋ","ㄨㄤˊ","","ㄈㄢˇ","ㄉㄜˊ","ㄩㄥˇ","ㄕㄥ",""],"42":["ㄙㄨㄛˇ","ㄧˇ","","ㄈㄢˊ","ㄊㄧㄥ","ㄐㄧㄢˋ","ㄨㄛˇ","ㄓㄜˋ","ㄏㄨㄚˋ","ㄐㄧㄡˋ","ㄑㄩˋ","ㄒㄧㄥˊ","˙ㄉㄜ","","ㄏㄠˇ","ㄅㄧˇ","ㄧ","ㄍㄜˋ","ㄘㄨㄥ","ㄇㄧㄥˊ","ㄖㄣˊ","","ㄅㄚˇ","ㄈㄤˊ","˙ㄗ","ㄍㄞˋ","ㄗㄞˋ","ㄆㄢˊ","ㄕˊ","ㄕㄤˋ",""],"43":["ㄙㄚ","ㄗㄞˋ","ㄏㄠˇ","ㄉㄧˋ","ㄕㄤˋ","˙ㄉㄜ","","ㄐㄧㄡˋ","ㄕˋ","ㄖㄣˊ","ㄊㄧㄥ","ㄉㄠˋ","ㄇㄧㄥˊ","ㄅㄞˊ","˙ㄌㄜ","","ㄏㄡˋ","ㄌㄞˊ","ㄐㄧㄝˊ","ㄕˊ","","ㄧㄡˇ","ㄧ","ㄅㄞˇ","ㄅㄟˋ","˙ㄉㄜ","","ㄧㄡˇ","ㄌㄧㄡˋ","ㄕˊ","ㄅㄟˋ","˙ㄉㄜ","","ㄧㄡˇ","ㄙㄢ","ㄕˊ","ㄅㄟˋ","˙ㄉㄜ",""],"44":["ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","ㄕㄨㄛ","","","ㄦˊ","˙ㄚ","","ㄋㄧˇ","ㄍㄞ","ㄏㄨㄟˊ","ㄒㄧㄤˇ","ㄋㄧˇ","ㄕㄥ","ㄑㄧㄢˊ","ㄒㄧㄤˇ","ㄍㄨㄛˋ","ㄈㄨˊ","","ㄌㄚ","ㄙㄚ","ㄌㄨˋ","ㄧㄝˇ","ㄕㄡˋ","ㄍㄨㄛˋ","ㄎㄨˇ","","ㄖㄨˊ","ㄐㄧㄣ","ㄊㄚ","ㄗㄞˋ","ㄓㄜˋ","ㄌㄧˇ","ㄉㄜˊ","ㄢ","ㄨㄟˋ","","ㄋㄧˇ","ㄉㄠˋ","ㄕㄡˋ","ㄊㄨㄥˋ","ㄎㄨˇ",""],"45":["ㄩˊ","ㄕˋ","ㄑㄧˇ","ㄌㄞˊ","","ㄨㄤˇ","ㄊㄚ","ㄈㄨˋ","ㄑㄧㄣ","ㄋㄚˋ","ㄌㄧˇ","ㄑㄩˋ","","ㄒㄧㄤ","ㄌㄧˊ","ㄏㄞˊ","ㄩㄢˇ","","ㄊㄚ","ㄈㄨˋ","ㄑㄧㄣ","ㄎㄢˋ","ㄐㄧㄢˋ","","ㄐㄧㄡˋ","ㄉㄨㄥˋ","˙ㄌㄜ","ㄘˊ","ㄒㄧㄣ","","ㄆㄠˇ","ㄑㄩˋ","ㄅㄠˋ","˙ㄓㄜ","ㄊㄚ","˙ㄉㄜ","ㄐㄧㄥˇ","ㄒㄧㄤˋ","","ㄌㄧㄢˊ","ㄌㄧㄢˊ","ㄩˇ","ㄊㄚ","ㄑㄧㄣ","ㄗㄨㄟˇ",""],"46":["ㄊㄚ","ㄕㄨㄛ","","","ㄕˋ","ㄌㄧㄢˊ","ㄇㄧㄣˇ","ㄊㄚ","˙ㄉㄜ","","","ㄧㄝˊ","ㄙㄨ","ㄕㄨㄛ","","","ㄋㄧˇ","ㄑㄩˋ","ㄓㄠˋ","ㄧㄤˋ","ㄒㄧㄥˊ","˙ㄅㄚ","",""],"47":["ㄖㄣˊ","ㄖㄨㄛˋ","ㄏㄜ","ㄨㄛˇ","ㄙㄨㄛˇ","ㄘˋ","˙ㄉㄜ","ㄕㄨㄟˇ","ㄐㄧㄡˋ","ㄩㄥˇ","ㄩㄢˇ","ㄅㄨˋ","ㄎㄜˇ","","ㄨㄛˇ","ㄙㄨㄛˇ","ㄘˋ","˙ㄉㄜ","ㄕㄨㄟˇ","ㄧㄠˋ","ㄗㄞˋ","ㄊㄚ","ㄌㄧˇ","ㄊㄡˊ","ㄔㄥˊ","ㄨㄟˊ","ㄑㄩㄢˊ","ㄩㄢˊ","","ㄓˊ","ㄩㄥˇ","ㄉㄠˋ","ㄩㄥˇ","ㄕㄥ",""],"48":["ㄧㄝˊ","ㄙㄨ","ㄒㄧㄥˇ","˙ㄌㄜ","","ㄔˋ","ㄗㄜˊ","ㄈㄥ","","ㄒㄧㄤˋ","ㄏㄞˇ","ㄕㄨㄛ","","","ㄓㄨˋ","˙ㄌㄜ","˙ㄅㄚ","","ㄐㄧㄥˋ","˙ㄌㄜ","˙ㄅㄚ","","","ㄈㄥ","ㄐㄧㄡˋ","ㄓˇ","ㄓㄨˋ","","ㄉㄚˋ","ㄉㄚˋ","˙ㄉㄜ","ㄆㄧㄥˊ","ㄐㄧㄥˋ","˙ㄌㄜ",""],"49":["ㄐㄧㄡˋ","ㄌㄚ","˙ㄓㄜ","ㄏㄞˊ","˙ㄗ","˙ㄉㄜ","ㄕㄡˇ","","ㄉㄨㄟˋ","ㄊㄚ","ㄕㄨㄛ","","","ㄉㄚˋ","ㄌㄧˋ","ㄉㄚˋ","","ㄍㄨˇ","ㄇㄧˇ","","","","ㄈㄢ","ㄔㄨ","ㄌㄞˊ","ㄐㄧㄡˋ","ㄕˋ","ㄕㄨㄛ","","","ㄍㄨㄟ","ㄋㄩˇ","","ㄨㄛˇ","ㄈㄣ","ㄈㄨˋ","ㄋㄧˇ","ㄑㄧˇ","ㄌㄞˊ","","",""],"50":["ㄊㄚ","ㄕㄨㄛ","","","ㄊㄚ","ㄕˋ","ㄍㄜˋ","ㄗㄨㄟˋ","ㄖㄣˊ","ㄅㄨˋ","ㄕˋ","","ㄨㄛˇ","ㄅㄨˋ","ㄓ","ㄉㄠˋ","","ㄧㄡˇ","ㄧ","ㄐㄧㄢˋ","ㄕˋ","ㄨㄛˇ","ㄓ","ㄉㄠˋ","","ㄘㄨㄥˊ","ㄑㄧㄢˊ","ㄨㄛˇ","ㄕˋ","ㄧㄢˇ","ㄒㄧㄚ","˙ㄉㄜ","","ㄖㄨˊ","ㄐㄧㄣ","ㄋㄥˊ","ㄎㄢˋ","ㄐㄧㄢˋ","˙ㄌㄜ","",""],"51":["ㄧㄝˊ","ㄙㄨ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄐㄧㄡˋ","ㄕˋ","ㄕㄥ","ㄇㄧㄥˋ","˙ㄉㄜ","ㄌㄧㄤˊ","","ㄉㄠˋ","ㄨㄛˇ","ㄓㄜˋ","ㄌㄧˇ","ㄌㄞˊ","˙ㄉㄜ","","ㄅㄧˋ","ㄉㄧㄥˋ","ㄅㄨˋ","ㄜˋ","","ㄒㄧㄣˋ","ㄨㄛˇ","˙ㄉㄜ","","ㄩㄥˇ","ㄩㄢˇ","ㄅㄨˋ","ㄎㄜˇ",""],"52":["ㄧㄝˊ","ㄙㄨ","ㄉㄨㄟˋ","ㄊㄚ","ㄕㄨㄛ","","","ㄈㄨˋ","ㄏㄨㄛˊ","ㄗㄞˋ","ㄨㄛˇ","","ㄕㄥ","ㄇㄧㄥˋ","ㄧㄝˇ","ㄗㄞˋ","ㄨㄛˇ","","ㄒㄧㄣˋ","ㄨㄛˇ","˙ㄉㄜ","ㄖㄣˊ","ㄙㄨㄟ","ㄖㄢˊ","ㄙˇ","˙ㄌㄜ","","ㄧㄝˇ","ㄅㄧˋ","ㄈㄨˋ","ㄏㄨㄛˊ",""],"53":["ㄖㄣˊ","˙ㄗ","ㄌㄞˊ","","ㄨㄟˋ","ㄧㄠˋ","ㄒㄩㄣˊ","ㄓㄠˇ","","ㄓㄥˇ","ㄐㄧㄡˋ","ㄕ","ㄙㄤˋ","˙ㄉㄜ","ㄖㄣˊ",""],"54":["ㄊㄚ","ㄅㄨˋ","ㄗㄞˋ","ㄓㄜˋ","ㄌㄧˇ","","ㄓㄠˋ","ㄊㄚ","ㄙㄨㄛˇ","ㄕㄨㄛ","˙ㄉㄜ","","ㄧˇ","ㄐㄧㄥ","ㄈㄨˋ","ㄏㄨㄛˊ","˙ㄌㄜ","","ㄋㄧˇ","˙ㄇㄣ","ㄌㄞˊ","ㄎㄢˋ","ㄢ","ㄈㄤˋ","ㄓㄨˇ","˙ㄉㄜ","ㄉㄧˋ","ㄈㄤ",""],"55":["ㄉㄢˋ","ㄕㄥˋ","ㄌㄧㄥˊ","ㄐㄧㄤˋ","ㄌㄧㄣˊ","ㄗㄞˋ","ㄋㄧˇ","˙ㄇㄣ","ㄕㄣ","ㄕㄤˋ","","ㄋㄧˇ","˙ㄇㄣ","ㄐㄧㄡˋ","ㄅㄧˋ","ㄉㄜˊ","ㄓㄠˊ","ㄋㄥˊ","ㄌㄧˋ","","ㄅㄧㄥˋ","ㄧㄠˋ","ㄗㄞˋ","ㄧㄝˊ","ㄌㄨˋ","ㄙㄚ","ㄌㄥˇ","","ㄧㄡˊ","ㄊㄞˋ","ㄑㄩㄢˊ","ㄉㄧˋ","","ㄏㄜˊ","ㄙㄚ","ㄇㄚˇ","ㄌㄧˋ","ㄧㄚˋ","","ㄓˊ","ㄉㄠˋ","ㄉㄧˋ","ㄐㄧˊ","","ㄗㄨㄛˋ","ㄨㄛˇ","˙ㄉㄜ","ㄐㄧㄢˋ","ㄓㄥˋ",""],"56":["ㄋㄚˋ","ㄒㄧㄝ","ㄈㄣ","ㄙㄢˋ","˙ㄉㄜ","ㄖㄣˊ","ㄨㄤˇ","ㄍㄜˋ","ㄔㄨˋ","ㄑㄩˋ","ㄔㄨㄢˊ","ㄉㄠˋ",""],"57":["ㄩˊ","ㄕˋ","ㄅㄧˇ","ㄉㄜˊ","ㄅㄟˋ","ㄑㄧㄡˊ","ㄗㄞˋ","ㄐㄧㄢ","ㄌㄧˇ","","ㄐㄧㄠˋ","ㄏㄨㄟˋ","ㄑㄩㄝˋ","ㄨㄟˋ","ㄊㄚ","ㄑㄧㄝ","ㄑㄧㄝ","˙ㄉㄜ","ㄉㄠˇ","ㄍㄠˋ","ㄕㄣˊ",""],"58":["ㄐㄧㄡˋ","ㄗㄞˋ","ㄍㄜˋ","ㄏㄨㄟˋ","ㄊㄤˊ","ㄌㄧˇ","ㄒㄩㄢ","ㄔㄨㄢˊ","ㄧㄝˊ","ㄙㄨ","","ㄕㄨㄛ","ㄊㄚ","ㄕˋ","ㄕㄣˊ","˙ㄉㄜ","ㄦˊ","˙ㄗ",""],"59":["ㄋㄚˋ","ㄇㄟˇ","ㄏㄠˇ","˙ㄉㄜ","ㄓㄤˋ","ㄨㄛˇ","ㄧˇ","ㄐㄧㄥ","ㄉㄚˇ","ㄍㄨㄛˋ","˙ㄌㄜ","","ㄉㄤ","ㄆㄠˇ","˙ㄉㄜ","ㄌㄨˋ","ㄨㄛˇ","ㄧˇ","ㄐㄧㄥ","ㄆㄠˇ","ㄐㄧㄣˇ","˙ㄌㄜ","","ㄙㄨㄛˇ","ㄒㄧㄣˋ","˙ㄉㄜ","ㄉㄠˋ","ㄨㄛˇ","ㄧˇ","ㄐㄧㄥ","ㄕㄡˇ","ㄓㄨˋ","˙ㄌㄜ",""],"60":["ㄕㄣˊ","ㄧㄠˋ","ㄘㄚ","ㄑㄩˋ","ㄊㄚ","˙ㄇㄣ","ㄧ","ㄑㄧㄝˋ","˙ㄉㄜ","ㄧㄢˇ","ㄌㄟˋ","","ㄅㄨˋ","ㄗㄞˋ","ㄧㄡˇ","ㄙˇ","ㄨㄤˊ","","ㄧㄝˇ","ㄅㄨˋ","ㄗㄞˋ","ㄧㄡˇ","ㄅㄟ","ㄞ","","ㄎㄨ","ㄏㄠˋ","","ㄊㄥˊ","ㄊㄨㄥˋ","","ㄧㄣ","ㄨㄟˋ","ㄧˇ","ㄑㄧㄢˊ","˙ㄉㄜ","ㄕˋ","ㄉㄡ","ㄍㄨㄛˋ","ㄑㄩˋ","˙ㄌㄜ",""]},"i":[["ㄑㄧˇ","ㄔㄨ","ㄓ","ㄩㄢˊ"],["ㄧㄥ","ㄒㄩˇ","ㄓㄤˋ","ㄆㄥˊ"],["ㄩㄝ","ㄙㄜˋ","ㄌㄧㄤˊ","ㄘㄤ"],["ㄔㄨ","ㄞ","ㄐㄧˊ","ㄨㄢ"],["ㄐㄧㄚ","ㄋㄢˊ","ㄔㄥˊ","ㄇㄣˊ"],["ㄇㄞˋ","ㄊㄧㄢˊ","ㄒㄧㄠˇ","ㄓㄣˋ"],["ㄇㄨˋ","ㄧㄤˊ","ㄕㄢ","ㄍㄤˇ"],["ㄕㄥˋ","ㄉㄧㄢˋ","ㄨㄤˊ","ㄔㄥˊ"],["ㄒㄧㄢ","ㄓ","ㄉㄥ","ㄊㄚˇ"],["ㄅㄚ","ㄅㄧˇ","ㄌㄨㄣˊ","ㄏㄜˊ","ㄆㄢˋ"],["ㄅㄛˊ","ㄌㄧˋ","ㄏㄥˊ","ㄒㄧㄥ","ㄍㄨㄤ"],["ㄐㄧㄚ","ㄌㄧˋ","ㄌㄧˋ","ㄕㄣˊ","ㄐㄧ"],["ㄅㄧˇ","ㄩˋ","ㄏㄨㄚ","ㄩㄢˊ"],["ㄈㄨˋ","ㄏㄨㄛˊ","ㄓ","ㄑㄧㄡ"],["ㄊㄧㄢ","ㄐㄧㄚ"]],"h":[["ㄘㄨㄥˊ","ㄑㄧˇ","ㄔㄨ","˙ㄉㄜ","ㄩㄢˊ","˙ㄗ","","ㄧ","ㄌㄨˋ","ㄗㄡˇ","ㄉㄠˋ","ㄊㄧㄢ","ㄐㄧㄚ"],["","","","ㄗㄜˊ","ㄦˊ","ㄊㄨㄥˊ","ㄕㄥˋ","ㄐㄧㄥ","ㄍㄨˋ","ㄕˋ","ㄍㄞˋ","ㄔㄥˊ","ㄧ","ㄗㄨㄛˋ","ㄨㄢˊ","ㄐㄩˋ","ㄒㄧㄠˇ","ㄔㄥˊ","","","","","ㄗㄨㄛˋ","ㄍㄨˋ","ㄕˋ","ㄉㄠˇ","ㄢˋ","ㄕㄥˋ","ㄐㄧㄥ","ㄕㄨㄣˋ","ㄒㄩˋ","ㄆㄞˊ","ㄔㄥˊ","ㄌㄨㄛˊ","ㄒㄩㄢˊ","","ㄇㄨˋ","ㄑㄧㄠˊ","ㄅㄚˇ","ㄊㄚ","˙ㄇㄣ","ㄌㄧㄢˊ","ㄑㄧˇ","ㄌㄞˊ","","ㄓㄨㄥ","ㄉㄧㄢˇ","ㄕˋ","ㄓㄨㄥ","ㄧㄤ","˙ㄉㄜ","","ㄊㄧㄢ","ㄐㄧㄚ","",""]],"p":[[["ㄧㄚˋ","ㄉㄤ","ㄩˇ","ㄒㄧㄚˋ","ㄨㄚˊ"],["ㄕㄣˊ","ㄗㄨㄟˋ","ㄒㄧㄢ","ㄗㄠˋ","˙ㄉㄜ","ㄧ","ㄉㄨㄟˋ","ㄈㄨ","ㄑㄧ"]],[["ㄋㄨㄛˊ","ㄧㄚˋ"],["ㄓㄠˋ","ㄕㄣˊ","˙ㄉㄜ","ㄈㄣ","ㄈㄨˋ","ㄗㄠˋ","ㄈㄤ","ㄓㄡ"]],[["ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ"],["ㄒㄧㄤ","ㄒㄧㄣˋ","ㄕㄣˊ","ㄧㄥ","ㄒㄩˇ","˙ㄉㄜ","ㄒㄧㄣˋ","ㄒㄧㄣ","ㄓ","ㄈㄨˋ"]],[["ㄧˇ","ㄙㄚ"],["ㄧㄚˋ","ㄅㄛˊ","ㄌㄚ","ㄏㄢˇ","ㄆㄢˋ","ㄨㄤˋ","ㄉㄨㄛ","ㄋㄧㄢˊ","˙ㄉㄜ","ㄦˊ","˙ㄗ"]],[["ㄧㄚˇ","ㄍㄜˋ"],["ㄏㄡˋ","ㄌㄞˊ","ㄅㄟˋ","ㄕㄣˊ","ㄍㄞˇ","ㄇㄧㄥˊ","ㄐㄧㄠˋ","ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ"]],[["ㄩㄝ","ㄙㄜˋ"],["ㄔㄨㄢ","ㄘㄞˇ","ㄧ","","ㄏㄨㄟˋ","ㄐㄧㄝˇ","ㄇㄥˋ","˙ㄉㄜ","ㄗㄞˇ","ㄒㄧㄤˋ"]],[["ㄇㄛˊ","ㄒㄧ"],["ㄉㄞˋ","ㄌㄧㄥˇ","ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ","ㄖㄣˊ","ㄔㄨ","ㄞ","ㄐㄧˊ"]],[["ㄩㄝ","ㄕㄨ","ㄧㄚˋ"],["ㄉㄞˋ","ㄅㄞˇ","ㄒㄧㄥˋ","ㄐㄧㄣˋ","ㄖㄨˋ","ㄧㄥ","ㄒㄩˇ","ㄓ","ㄉㄧˋ"]],[["ㄐㄧ","ㄉㄧㄢ"],["ㄩㄥˋ","ㄙㄢ","ㄅㄞˇ","ㄖㄣˊ","ㄉㄚˇ","ㄕㄥˋ","ㄓㄤˋ"]],[["ㄕㄣ","ㄙㄨㄣ"],["ㄌㄧˋ","ㄑㄧˋ","ㄏㄣˇ","ㄉㄚˋ","˙ㄉㄜ","ㄕˋ","ㄕ"]],[["ㄌㄨˋ","ㄉㄜˊ"],["ㄓㄨㄥ","ㄒㄧㄣ","ㄆㄟˊ","ㄅㄢˋ","ㄆㄛˊ","˙ㄆㄛ","ㄋㄚˊ","ㄜˊ","ㄇㄧˇ"]],[["ㄙㄚ","ㄇㄨˇ","ㄦˇ"],["ㄘㄨㄥˊ","ㄒㄧㄠˇ","ㄗㄞˋ","ㄕㄥˋ","ㄉㄧㄢˋ","ㄈㄨˊ","ㄕˋ","ㄕㄣˊ"]],[["ㄙㄠˇ","ㄌㄨㄛˊ","ㄨㄤˊ"],["ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ","ㄉㄧˋ","ㄧ","ㄨㄟˋ","ㄨㄤˊ"]],[["ㄉㄚˋ","ㄨㄟˋ"],["ㄇㄨˋ","ㄧㄤˊ","ㄕㄠˋ","ㄋㄧㄢˊ","ㄔㄥˊ","ㄨㄟˊ","ㄍㄨㄛˊ","ㄨㄤˊ"]],[["ㄙㄨㄛˇ","ㄌㄨㄛˊ","ㄇㄣˊ"],["ㄒㄧㄤˋ","ㄕㄣˊ","ㄑㄧㄡˊ","ㄓˋ","ㄏㄨㄟˋ","˙ㄉㄜ","ㄨㄤˊ"]],[["ㄧˇ","ㄌㄧˋ","ㄧㄚˋ"],["ㄑㄧㄡˊ","ㄕㄣˊ","ㄐㄧㄤˋ","ㄏㄨㄛˇ","˙ㄉㄜ","ㄒㄧㄢ","ㄓ"]],[["ㄧˇ","ㄌㄧˋ","ㄕㄚ"],["ㄐㄧㄝ","ㄒㄩˋ","ㄧˇ","ㄌㄧˋ","ㄧㄚˋ","˙ㄉㄜ","ㄒㄧㄢ","ㄓ"]],[["ㄩㄝ","ㄋㄚˊ"],["ㄅㄟˋ","ㄉㄚˋ","ㄩˊ","ㄊㄨㄣ","ㄒㄧㄚˋ","˙ㄉㄜ","ㄒㄧㄢ","ㄓ"]],[["ㄧˇ","ㄙㄞˋ","ㄧㄚˋ"],["ㄩˋ","ㄧㄢˊ","ㄐㄧㄡˋ","ㄓㄨˇ","ㄧㄠˋ","ㄌㄞˊ","˙ㄉㄜ","ㄒㄧㄢ","ㄓ"]],[["ㄧㄝˊ","ㄌㄧˋ","ㄇㄧˇ"],["ㄌㄧㄡˊ","˙ㄓㄜ","ㄌㄟˋ","ㄔㄨㄢˊ","ㄐㄧㄤˇ","ㄕㄣˊ","ㄏㄨㄚˋ","ㄩˇ"]],[["ㄧˇ","ㄒㄧ","ㄐㄧㄝˊ"],["ㄎㄢˋ","ㄐㄧㄢˋ","ㄎㄨ","ㄍㄨˇ","ㄈㄨˋ","ㄏㄨㄛˊ","˙ㄉㄜ","ㄧˋ","ㄒㄧㄤˋ"]],[["ㄉㄢˋ","ㄧˇ","ㄌㄧˇ"],["ㄗㄞˋ","ㄅㄚ","ㄅㄧˇ","ㄌㄨㄣˊ","ㄐㄧㄢ","ㄕㄡˇ","ㄒㄧㄣˋ","ㄧㄤˇ"]],[["ㄙㄢ","ㄨㄟˋ","ㄆㄥˊ","ㄧㄡˇ"],["ㄕㄚ","ㄉㄜˊ","ㄌㄚ","","ㄇㄧˇ","ㄕㄚ","","ㄧㄚˋ","ㄅㄛˊ","ㄋㄧˊ","ㄍㄜ"]],[["ㄧˇ","ㄙ","ㄊㄧㄝ"],["ㄩㄥˇ","ㄍㄢˇ","ㄓㄥˇ","ㄐㄧㄡˋ","ㄊㄨㄥˊ","ㄅㄠ","˙ㄉㄜ","ㄨㄤˊ","ㄏㄡˋ"]],[["ㄋㄧˊ","ㄒㄧ","ㄇㄧˇ"],["ㄉㄞˋ","ㄌㄧㄥˇ","ㄅㄞˇ","ㄒㄧㄥˋ","ㄔㄨㄥˊ","ㄐㄧㄢˋ","ㄔㄥˊ","ㄑㄧㄤˊ"]],[["ㄇㄚˇ","ㄌㄧˋ","ㄧㄚˋ"],["ㄧㄝˊ","ㄙㄨ","˙ㄉㄜ","ㄇㄨˇ","ㄑㄧㄣ"]],[["ㄕ","ㄒㄧˇ","ㄩㄝ","ㄏㄢˋ"],["ㄨㄟˋ","ㄧㄝˊ","ㄙㄨ","ㄩˋ","ㄅㄟˋ","ㄉㄠˋ","ㄌㄨˋ"]],[["ㄧㄝˊ","ㄙㄨ"],["ㄕㄣˊ","˙ㄉㄜ","ㄦˊ","˙ㄗ","","ㄨㄛˇ","˙ㄇㄣ","˙ㄉㄜ","ㄐㄧㄡˋ","ㄓㄨˇ"]],[["ㄅㄧˇ","ㄉㄜˊ"],["ㄩˊ","ㄈㄨ","ㄇㄣˊ","ㄊㄨˊ","","ㄏㄡˋ","ㄌㄞˊ","ㄩㄥˇ","ㄍㄢˇ","ㄔㄨㄢˊ","ㄈㄨˊ","ㄧㄣ"]],[["ㄋㄧˊ","ㄍㄜ","ㄉㄧˇ","ㄇㄨˇ"],["ㄧㄝˋ","ㄌㄧˇ","ㄌㄞˊ","ㄓㄠˇ","ㄧㄝˊ","ㄙㄨ","˙ㄉㄜ","ㄍㄨㄢ"]],[["ㄐㄧㄥˇ","ㄅㄧㄢ","˙ㄉㄜ","ㄈㄨˋ","ㄖㄣˊ"],["ㄗㄞˋ","ㄐㄧㄥˇ","ㄆㄤˊ","ㄩˋ","ㄐㄧㄢˋ","ㄧㄝˊ","ㄙㄨ"]],[["ㄧㄚˊ","ㄌㄨˇ"],["ㄋㄩˇ","ㄦˊ","ㄅㄟˋ","ㄧㄝˊ","ㄙㄨ","ㄐㄧㄡˋ","ㄏㄨㄛˊ"]],[["ㄅㄚ","ㄉㄧˇ","ㄇㄞˇ"],["ㄅㄟˋ","ㄧㄝˊ","ㄙㄨ","ㄧ","ㄏㄠˇ","˙ㄉㄜ","ㄒㄧㄚ","˙ㄗ"]],[["ㄌㄚ","ㄙㄚ","ㄌㄨˋ"],["ㄧㄝˊ","ㄙㄨ","˙ㄉㄜ","ㄏㄠˇ","ㄆㄥˊ","ㄧㄡˇ"]],[["ㄙㄚ","ㄍㄞ"],["ㄆㄚˊ","ㄕㄤˋ","ㄙㄤ","ㄕㄨˋ","˙ㄉㄜ","ㄕㄨㄟˋ","ㄌㄧˋ"]],[["ㄙ","ㄊㄧˊ","ㄈㄢˇ"],["ㄉㄧˋ","ㄧ","ㄨㄟˋ","ㄨㄟˋ","ㄓㄨˇ","ㄒㄩㄣˋ","ㄉㄠˋ","˙ㄉㄜ","ㄖㄣˊ"]],[["ㄅㄠˇ","ㄌㄨㄛˊ"],["ㄘㄨㄥˊ","ㄅㄧ","ㄆㄛˋ","ㄓㄜˇ","ㄅㄧㄢˋ","ㄔㄥˊ","ㄕˇ","ㄊㄨˊ"]]],"ui":[["ㄧ","ㄖㄣˊ","ㄨˋ","ㄓㄠˇ","ㄍㄨˋ","ㄕˋ"]]};
+const PEOPLE=[["亞當與夏娃","神最先造的一對夫妻",[1,2]],["挪亞","照神的吩咐造方舟",[3]],["亞伯拉罕","相信神應許的信心之父",[4,5]],["以撒","亞伯拉罕盼望多年的兒子",[4,5,6]],["雅各","後來被神改名叫以色列",[6,7,8]],["約瑟","穿彩衣、會解夢的宰相",[7,8]],["摩西","帶領以色列人出埃及",[9,10,11,12]],["約書亞","帶百姓進入應許之地",[12,13]],["基甸","用三百人打勝仗",[15]],["參孫","力氣很大的士師",[14]],["路得","忠心陪伴婆婆拿俄米",[16]],["撒母耳","從小在聖殿服事神",[17,18,19]],["掃羅王","以色列第一位王",[18,19,20]],["大衛","牧羊少年成為國王",[19,20,21]],["所羅門","向神求智慧的王",[22]],["以利亞","求神降火的先知",[24]],["以利沙","接續以利亞的先知",[24,25]],["約拿","被大魚吞下的先知",[26]],["以賽亞","預言救主要來的先知",[27]],["耶利米","流著淚傳講神話語",[28]],["以西結","看見枯骨復活的異象",[29]],["但以理","在巴比倫堅守信仰",[31,32,34]],["三位朋友","沙得拉、米煞、亞伯尼歌",[31,33]],["以斯帖","勇敢拯救同胞的王后",[30]],["尼希米","帶領百姓重建城牆",[35]],["馬利亞","耶穌的母親",[36,54]],["施洗約翰","為耶穌預備道路",[37]],["耶穌","神的兒子，我們的救主",[36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,60]],["彼得","漁夫門徒，後來勇敢傳福音",[39,48,49,54,55,57]],["尼哥底母","夜裡來找耶穌的官",[41]],["井邊的婦人","在井旁遇見耶穌",[47]],["睚魯","女兒被耶穌救活",[49]],["巴底買","被耶穌醫好的瞎子",[50]],["拉撒路","耶穌的好朋友",[52]],["撒該","爬上桑樹的稅吏",[53]],["司提反","第一位為主殉道的人",[56]],["保羅","從逼迫者變成使徒",[56,58,59]]];
+const ISL = [
+ {k:"A",name:"起初之園",era:"創世記",ids:[1,2,3],top:"#86c56a",rainbow:true},
+ {k:"B",name:"應許帳棚",era:"先祖",ids:[4,5,6],top:"#b9cf73"},
+ {k:"C",name:"約瑟糧倉",era:"先祖",ids:[7,8],top:"#e2cb86"},
+ {k:"D",name:"出埃及灣",era:"摩西",ids:[9,10,11,12],top:"#e6cf8e"},
+ {k:"E",name:"迦南城門",era:"約書亞・士師",ids:[13,14,15],top:"#9ccb68"},
+ {k:"F",name:"麥田小鎮",era:"路得・撒母耳",ids:[16,17,18],top:"#c2d36a"},
+ {k:"G",name:"牧羊山崗",era:"大衛",ids:[19,20,21],top:"#7fc06b"},
+ {k:"H",name:"聖殿王城",era:"列王",ids:[22,23],top:"#a8cf79"},
+ {k:"I",name:"先知燈塔",era:"先知",ids:[24,25,26,27,28,29],top:"#93c77a"},
+ {k:"J",name:"巴比倫河畔",era:"被擄與歸回",ids:[30,31,32,33,34,35],top:"#dcc888"},
+ {k:"K",name:"伯利恆星光",era:"耶穌降生",ids:[36,37,38,39],top:"#9fcf7f"},
+ {k:"L",name:"加利利神蹟",era:"耶穌的神蹟",ids:[40,48,49,50,51,52,53],top:"#86c77c"},
+ {k:"M",name:"比喻花園",era:"耶穌的教導",ids:[41,42,43,44,45,46,47],top:"#a2d07a"},
+ {k:"N",name:"復活之丘",era:"復活與教會",ids:[54,55,56,57,58,59],top:"#8ccd84"},
+ {k:"O",name:"天家",era:"新天新地",ids:[60],top:"#f3dca0",home:true}
+];
+ISL.forEach((isl,i)=>{isl.idx=i; isl.nt=i>=10; isl.ids.forEach(id=>STORY[id].isl=i);});
+
+const GRACE = [
+ [3,48,"神掌管洪水，也平靜風浪"],
+ [12,51,"曠野的嗎哪與五餅二魚：神供應"],
+ [12,38,"曠野四十年與曠野四十天"],
+ [5,54,"公羊代替以撒，耶穌為我們捨命"],
+ [11,54,"逾越節的羔羊與十字架"],
+ [26,54,"約拿三天在魚腹，耶穌第三天復活"],
+ [19,36,"大衛的城伯利恆，耶穌在此降生"],
+ [27,36,"以賽亞預言的嬰孩來了"],
+ [24,37,"以利亞的心志，施洗約翰的呼聲"],
+ [25,40,"以利沙醫治乃縵，耶穌醫治病人"],
+ [8,45,"約瑟饒恕哥哥，父親擁抱浪子"],
+ [6,47,"雅各的井邊，耶穌賜下活水"],
+ [29,52,"枯骨復活，拉撒路出來"],
+ [22,55,"所羅門的聖殿，神住在祂的教會中"],
+ [1,60,"起初的創造，將來的新天新地"],
+ [2,60,"悲傷的開始，不再有眼淚"]
+];
+
+/* ---------------- Three.js 場景 ---------------- */
+const canvas = document.getElementById("scene");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xcfeaf7, 95, 230);
+const camera = new THREE.PerspectiveCamera(34, 1, 0.5, 400);
+camera.position.set(6, 44, 50);
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = 1.22; controls.minDistance = 10; controls.maxDistance = 95;
+controls.target.set(0, 0, 0);
+controls.screenSpacePanning = false;
+
+const hemi = new THREE.HemisphereLight(0xfff3dc, 0x6f8a6a, 0.75); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff1d6, 1.0);
+sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:1,far:140});
+sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.02;
+scene.add(sun); scene.add(sun.target);
+
+const matCache = {};
+function M(c){ if(!matCache[c]) matCache[c] = new THREE.MeshStandardMaterial({color:c, roughness:.82, metalness:0, flatShading:true}); return matCache[c]; }
+const winMat = new THREE.MeshStandardMaterial({color:0x3a3550, emissive:0xffcf6e, emissiveIntensity:0, roughness:.6, flatShading:true});
+const glowMat = new THREE.MeshStandardMaterial({color:0xffd75e, emissive:0xffc93b, emissiveIntensity:.8, roughness:.4, flatShading:true});
+const flameMat = new THREE.MeshStandardMaterial({color:0xff8a3d, emissive:0xff6a1f, emissiveIntensity:.9, roughness:.5, flatShading:true});
+
+function mesh(geo, mat, x=0,y=0,z=0, parent){ const m=new THREE.Mesh(geo, typeof mat==="string"?M(mat):mat); m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; if(parent) parent.add(m); return m; }
+const box=(w,h,d,c,x,y,z,p)=>mesh(new THREE.BoxGeometry(w,h,d),c,x,y+h/2,z,p);
+const cyl=(rt,rb,h,seg,c,x,y,z,p)=>mesh(new THREE.CylinderGeometry(rt,rb,h,seg),c,x,y+h/2,z,p);
+const cone=(r,h,seg,c,x,y,z,p)=>mesh(new THREE.ConeGeometry(r,h,seg),c,x,y+h/2,z,p);
+const ball=(r,c,x,y,z,p,det=0)=>mesh(new THREE.IcosahedronGeometry(r,det),c,x,y,z,p);
+
+const TOY = ["#e86a57","#f2b843","#5b9fe0","#6fc39b","#f08a4b","#9c89d9","#ef8fb0","#4fb3bf"];
+const WOOD="#b47c4e", ROOF="#8a4f3a", WHITE="#fbf6ee", STONE="#bfb6a8", SAND="#e8d29a";
+
+function pond(g,r=0.85){ const p=mesh(new THREE.CylinderGeometry(r,r,0.06,20), "#62b9d6",0,0.03,0,g); p.castShadow=false; return p; }
+function roofHouse(g,c,w=1,d=.9,h=.75,roof=ROOF){
+  box(w,h,d,c,0,0,0,g);
+  const r=mesh(new THREE.ConeGeometry(Math.max(w,d)*.78,.6,4),roof,0,h+.3,0,g); r.rotation.y=Math.PI/4; r.scale.set(1,1,d/w>1?1:.8);
+  box(.22,.36,.04,"#5b3b2a",0,0,d/2+.01,g);
+  box(.2,.2,.04,winMat,w*.28,h*.45,d/2+.02,g); box(.2,.2,.04,winMat,-w*.28,h*.45,d/2+.02,g);
+}
+function treeAt(g,x,z,s=1,col="#4f9a5c",fruit){
+  cyl(.07*s,.1*s,.5*s,6,WOOD,x,0,z,g);
+  const f=ball(.42*s,col,x,.75*s,z,g); f.scale.y=1.1;
+  if(fruit){ for(let i=0;i<4;i++){ const a=i*1.7; ball(.08*s,fruit,x+Math.cos(a)*.34*s,.72*s+((i%2)*.18*s),z+Math.sin(a)*.34*s,g);} }
+}
+
+const BUILD = {
+  tree(g,c){ treeAt(g,0,0,1.5,"#4f9a5c"); treeAt(g,.7,.4,.8,"#6db36a"); treeAt(g,-.6,.5,.9,"#3f8a52"); },
+  apple(g){ treeAt(g,0,0,1.5,"#5aa35e","#e0473c"); ball(.12,"#e0473c",.5,.08,.5,g); },
+  ark(g){ const h=box(1.8,.45,.8,WOOD,0,0,0,g); box(1.9,.08,.9,"#8f5f3a",0,.45,0,g); box(.9,.42,.6,"#d9a25f",0,.53,0,g);
+    const r=mesh(new THREE.ConeGeometry(.62,.36,4),ROOF,0,1.13,0,g); r.rotation.y=Math.PI/4; r.scale.set(1.4,1,.95);
+    box(.16,.16,.04,winMat,.22,.68,.31,g); box(.16,.16,.04,winMat,-.22,.68,.31,g); },
+  tent(g,c){ const t=cone(.78,1.05,6,c,0,0,0,g); cyl(.03,.03,.35,5,WOOD,0,1.0,0,g); box(.22,.14,.02,"#fbf6ee",.12,1.22,0,g); box(.3,.4,.05,"#5b3b2a",0,0,.62,g); },
+  altar(g){ for(let i=0;i<3;i++) box(.9-i*.18,.22,.7-i*.12,STONE,0,i*.22,0,g); const f=cone(.22,.55,5,flameMat,0,.66,0,g); f.userData.flame=true; cone(.13,.35,5,glowMat,.15,.66,.08,g).userData.flame=true; },
+  bush(g){ const b=ball(.55,"#5a9a4f",0,.45,0,g); b.scale.y=.85; const f=cone(.28,.7,5,flameMat,0,.7,0,g); f.userData.flame=true; cone(.16,.45,5,glowMat,.2,.75,.1,g).userData.flame=true; box(.5,.06,.06,WOOD,.6,0,.4,g); },
+  well(g){ const w=mesh(new THREE.CylinderGeometry(.45,.48,.42,10,1,true),STONE,0,.21,0,g); w.material=M(STONE); mesh(new THREE.CylinderGeometry(.4,.4,.05,10),"#3c7fb0",0,.32,0,g).castShadow=false;
+    box(.06,.75,.06,WOOD,.42,0,0,g); box(.06,.75,.06,WOOD,-.42,0,0,g); const r=mesh(new THREE.ConeGeometry(.62,.32,4),ROOF,0,.9,0,g); r.rotation.y=Math.PI/4; cyl(.05,.05,.8,6,WOOD,0,.62,0,g).rotation.z=Math.PI/2; },
+  pyramid(g){ const p=mesh(new THREE.ConeGeometry(1,1.25,4),SAND,0,.625,0,g); p.rotation.y=Math.PI/4; box(.25,.3,.05,"#5b3b2a",0,0,.62,g); },
+  basket(g){ pond(g,.75); const b=cyl(.22,.17,.18,8,"#c99a5a",0,.06,0,g); box(.36,.04,.04,"#4c9a5c",.36,.06,.2,g); },
+  temple(g){ box(1.5,.18,1.1,WHITE,0,0,0,g); for(const x of [-.55,-.18,.18,.55]) for(const z of [-.38,.38]) cyl(.08,.09,.9,8,WHITE,x,.18,z,g);
+    box(1.6,.14,1.2,"#e9dcc4",0,1.08,0,g); const r=mesh(new THREE.ConeGeometry(.95,.4,4),"#d8b46a",0,1.42,0,g); r.rotation.y=Math.PI/4; r.scale.set(1.15,1,.8); },
+  palace(g,c){ box(1.4,.85,1.0,c,0,0,0,g); for(const x of [-.7,.7]) for(const z of [-.5,.5]){ cyl(.18,.2,1.15,8,WHITE,x,0,z,g); cone(.24,.36,8,ROOF,x,1.15,z,g);}
+    const d=ball(.38,"#f2b843",0,.95,0,g,1); d.scale.y=.8; box(.28,.42,.05,"#5b3b2a",0,0,.51,g); box(.18,.18,.04,winMat,.35,.48,.51,g); box(.18,.18,.04,winMat,-.35,.48,.51,g); },
+  tower(g,c){ cyl(.42,.48,1.5,8,c,0,0,0,g); cone(.56,.6,8,ROOF,0,1.5,0,g); box(.18,.24,.05,winMat,0,.9,.43,g); box(.22,.34,.05,"#5b3b2a",0,0,.46,g);
+    for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; box(.12,.12,.12,c,Math.cos(a)*.42,1.5,Math.sin(a)*.42,g);} },
+  lighthouse(g){ const cols=["#e86a57",WHITE,"#e86a57",WHITE]; cols.forEach((c,i)=>cyl(.38-i*.05,.42-i*.05,.42,10,c,0,i*.42,0,g)); const l=ball(.2,glowMat,0,1.9,0,g,1); l.userData.lamp=true; cone(.32,.32,10,ROOF,0,2.08,0,g); cyl(.36,.36,.06,10,"#3c3a4a",0,1.68,0,g); },
+  fish(g){ pond(g,.95); const b=ball(.55,"#5b9fe0",0,.32,0,g,1); b.scale.set(1.5,.75,.85); const t=mesh(new THREE.ConeGeometry(.32,.5,4),"#4a8acb",-.9,.4,0,g); t.rotation.z=Math.PI/2; ball(.07,"#2c2a3a",.6,.48,.3,g);
+    const sp=cone(.06,.35,5,"#bfe6ff",.2,.62,0,g); },
+  furnace(g){ box(1.2,.9,.9,"#9e8e7c",0,0,0,g); cyl(.18,.22,.5,6,"#9e8e7c",.4,.9,-.2,g); const o=box(.55,.45,.05,flameMat,0,.08,.46,g); o.userData.flame=true; box(1.25,.1,.95,"#7f705f",0,.9,0,g); },
+  den(g){ const r=ball(.8,"#a39886",0,.3,0,g,0); r.scale.set(1.2,.85,1); const ar=mesh(new THREE.CylinderGeometry(.35,.35,.1,10),"#2c2a3a",0,.35,.82,g); ar.rotation.x=Math.PI/2;
+    const lion=new THREE.Group(); lion.position.set(.75,0,.8); g.add(lion); ball(.22,"#f2b843",0,.22,0,lion,1).scale.set(1.3,.9,.9); ball(.16,"#e08a3c",.28,.36,0,lion,1); ball(.1,"#f2c461",.36,.36,0,lion,1); },
+  wall(g){ for(let i=-1;i<=1;i++){ box(.62,.75,.38,"#d6c39c",i*.66,0,0,g); for(const dx of [-.2,0,.2]) box(.14,.14,.38,"#d6c39c",i*.66+dx,.75,0,g);} cyl(.24,.26,1.15,8,"#cdb58a",-1.1,0,0,g); cyl(.24,.26,1.15,8,"#cdb58a",1.1,0,0,g); box(.3,.42,.06,"#5b3b2a",0,0,.2,g); },
+  field(g){ box(1.6,.06,1.2,"#9b6a3e",0,0,0,g); for(let i=0;i<4;i++) for(let j=0;j<3;j++) cone(.1,.5,5,"#f2c45a",-.6+i*.4,.06,-.4+j*.4,g); cyl(.03,.03,.7,4,WOOD,.85,0,.55,g); box(.4,.06,.06,WOOD,.85,.55,.55,g); },
+  sheep(g){ for(const [x,z] of [[0,0],[.55,.3],[-.45,.35],[.15,-.5]]){ const s=new THREE.Group(); s.position.set(x,0,z); s.rotation.y=x*2; g.add(s);
+      ball(.22,WHITE,0,.28,0,s,1).scale.set(1.25,.9,.95); ball(.1,"#3c3a4a",.27,.34,0,s,0); for(const lx of [-.12,.12]) for(const lz of [-.08,.08]) box(.04,.16,.04,"#3c3a4a",lx,0,lz,s); }
+    for(let i=0;i<5;i++){ const a=-0.6+i*.35; box(.06,.38,.06,WOOD,Math.cos(a)*1.05,0,Math.sin(a)*1.05,g);} },
+  house(g,c){ roofHouse(g,c); },
+  inn(g,c){ roofHouse(g,c,1.2,.9,.8); box(.4,.18,.04,"#f2b843",0,.95,.47,g); },
+  river(g,c){ const p=mesh(new THREE.BoxGeometry(1.8,.05,.55),"#62b9d6",0,.03,.3,g); p.castShadow=false; roofHouse(g,c,.7,.6,.55); g.children.slice(-5).forEach(m=>m.position.z-=.45); },
+  stable(g){ box(1.3,.08,.9,"#d6b26e",0,0,0,g); for(const x of [-.6,.6]) for(const z of [-.38,.38]) box(.08,.8,.08,WOOD,x,0,z,g);
+    const r=mesh(new THREE.ConeGeometry(1.0,.45,4),"#c79a52",0,1.02,0,g); r.rotation.y=Math.PI/4; r.scale.set(1,1,.7); box(.45,.2,.3,"#c99a5a",0,.08,0,g);
+    const st=mesh(new THREE.OctahedronGeometry(.28,0),glowMat,0,2.0,0,g); st.userData.star=true; },
+  hill(g){ const h=ball(.9,"#79b765",0,0,0,g,1); h.scale.set(1.15,.62,1); ball(.18,STONE,.5,.3,.4,g); ball(.14,STONE,-.4,.35,.5,g); treeAt(g,-.15,-.15,.7,"#3f8a52"); },
+  boat(g,c){ pond(g,.95); const h=box(1.1,.26,.46,c,0,.04,0,g); box(1.18,.06,.52,WOOD,0,.3,0,g); cyl(.03,.03,1.0,5,WOOD,0,.3,0,g);
+    const s=mesh(new THREE.ConeGeometry(.42,.8,3),WHITE,.14,.85,0,g); s.scale.z=.12; s.rotation.y=Math.PI/2; },
+  tomb(g){ const r=ball(.75,"#b7ab99",0,.3,0,g,0); r.scale.set(1.15,.85,1); const d=mesh(new THREE.CylinderGeometry(.28,.28,.06,12),"#2c2a3a",0,.32,.66,g); d.rotation.x=Math.PI/2;
+    const st=mesh(new THREE.CylinderGeometry(.3,.3,.12,12),"#cfc4b2",.62,.3,.6,g); st.rotation.x=Math.PI/2; st.rotation.y=.5; },
+  easter(g){ BUILD.tomb(g); const c=new THREE.Group(); c.position.set(-.85,0,-.45); g.add(c); ball(.42,"#86c77c",0,0,0,c,1).scale.y=.5; box(.1,1.0,.1,WOOD,0,.1,0,c); box(.5,.1,.1,WOOD,0,.78,0,c); [[.5,.1],[.9,-.2],[-.3,.45]].forEach(([x,z])=>ball(.07,"#f6e27a",x,.12,z,g)); },
+  church(g){ roofHouse(g,WHITE,1.1,.9,.8,"#5b9fe0"); cyl(.2,.22,1.2,6,WHITE,.42,0,-.25,g); cone(.28,.45,6,"#5b9fe0",.42,1.2,-.25,g); box(.05,.32,.05,glowMat,.42,1.62,-.25,g); box(.2,.05,.05,glowMat,.42,1.82,-.25,g); },
+  gate(g){ for(const x of [-.55,.55]) cyl(.15,.17,1.4,10,WHITE,x,0,0,g); const a=mesh(new THREE.TorusGeometry(.55,.12,8,16,Math.PI),"#f2d27a",0,1.4,0,g);
+    box(.7,1.15,.08,glowMat,0,0,0,g).userData.lamp=true; for(const [x,y,z,r] of [[-1.1,.3,.4,.4],[1.05,.25,.3,.35],[-.9,.25,-.5,.3],[1.2,.35,-.4,.42],[0,.2,.75,.3]]) ball(r,WHITE,x,y,z,g,1); }
+};
+
+/* hex 佈局 */
+const SIZE = 4.6, RAD = 4.22, TOP = .55;
+const DIRS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+function ring(k){ let q=DIRS[4][0]*k, r=DIRS[4][1]*k; const out=[]; for(let i=0;i<6;i++) for(let j=0;j<k;j++){ out.push([q,r]); q+=DIRS[i][0]; r+=DIRS[i][1]; } return out; }
+const hd=(a,b)=>(Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[0]+a[1]-b[0]-b[1]))/2;
+const axial=([q,r])=>new THREE.Vector3(SIZE*Math.sqrt(3)*(q+r/2),0,SIZE*1.5*r);
+const r2=ring(2), r1=ring(1);
+let start=r1.findIndex(h=>hd(h,r2[7])===1);
+const r1o=[...r1.slice(start),...r1.slice(0,start)];
+const coords=[...r2.slice(0,8),...r1o,[0,0]];
+const decor=r2.slice(8);
+
+let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
+const SLOTS=[[0,0],[2.25,0],[-1.12,1.95],[-1.12,-1.95],[1.12,1.95],[1.12,-1.95],[-2.25,0]];
+const SLOT_ORDER={1:[0],2:[2,5],3:[2,1,3],4:[2,4,5,3],5:[0,2,4,5,3],6:[2,4,1,5,3,6],7:[0,2,4,1,5,3,6]};
+
+const islandsGroup=new THREE.Group(); scene.add(islandsGroup);
+const pickables=[]; const storyObj={}; const animated=[];
+function makeHex(r, h, color, y){ const m=mesh(new THREE.CylinderGeometry(r,r,h,6),color,0,y,0); return m; }
+
+ISL.forEach((isl,i)=>{
+  const g=new THREE.Group(); const p=axial(coords[i]); g.position.copy(p); islandsGroup.add(g);
+  isl.group=g; isl.base=p.clone(); isl.phase=i*.9; isl.sink=0; isl.sinkTarget=0;
+  g.add(makeHex(RAD*.97,1.1,"#9a6a45",-.95)); g.add(makeHex(RAD,.5,"#c99460",-.15));
+  const top=makeHex(RAD*1.01,.28,isl.home?"#f3dca0":isl.top,TOP-.14); top.userData.island=i; g.add(top); pickables.push(top);
+  const foam=mesh(new THREE.CylinderGeometry(RAD+.35,RAD+.35,.05,6,1,true),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5,side:THREE.DoubleSide}),0,.03,0,g); foam.castShadow=false;
+  const order=SLOT_ORDER[isl.ids.length]; const used=[];
+  isl.ids.forEach((id,j)=>{
+    const s=SLOTS[order[j]]; const b=new THREE.Group(); b.position.set(s[0],TOP,s[1]);
+    const toCenter=Math.atan2(-s[0],-s[1]); b.rotation.y=(s[0]===0&&s[1]===0)?0:toCenter;
+    const c=TOY[(id*3)%TOY.length]; (BUILD[STORY[id].kind]||BUILD.house)(b,c);
+    b.userData.sid=id; g.add(b); pickables.push(b); storyObj[id]=b; used.push(s);
+    b.traverse(o=>{ if(o.userData.flame||o.userData.star||o.userData.lamp) animated.push(o); });
+  });
+  // 裝飾樹
+  let tries=0, n=isl.home?4:6;
+  while(n>0 && tries<200){ tries++; const a=rnd()*Math.PI*2, rr=1+rnd()*2.4; const x=Math.cos(a)*rr, z=Math.sin(a)*rr;
+    if(used.some(s=>Math.hypot(s[0]-x,s[1]-z)<1.35)) continue; used.push([x,z]); n--;
+    if(isl.home) ball(.3+rnd()*.2,WHITE,x,TOP+.3,z,g,1); else if(rnd()<.75) treeAt(g,x,z,.55+rnd()*.35,["#4f9a5c","#3f8a52","#6db36a","#5aa35e"][Math.floor(rnd()*4)]); else ball(.16,STONE,x,TOP+.08,z,g); }
+  if(isl.rainbow){ const cols=["#e86a57","#f08a4b","#f2b843","#6fc39b","#5b9fe0","#9c89d9"]; cols.forEach((c,k)=>{ const t=mesh(new THREE.TorusGeometry(2.6-k*.13,.07,6,40,Math.PI),new THREE.MeshStandardMaterial({color:c,roughness:.6,flatShading:true,transparent:true,opacity:.85}),0,TOP,-3.3,g); t.castShadow=false; }); }
+  if(isl.home){ const h=new THREE.PointLight(0xffd36b,.0,14); h.position.set(0,3,0); g.add(h); isl.halo=h; }
+});
+
+// 點綴小島
+decor.forEach((c,i)=>{ const g=new THREE.Group(); g.position.copy(axial(c)); islandsGroup.add(g);
+  const s=.42+(i%2)*.12; g.position.x+=(i%2?1:-1)*1.2; g.add(makeHex(RAD*s,.9,"#9a6a45",-.6)); g.add(makeHex(RAD*s*1.02,.22,"#8fc56f",TOP-.11));
+  if(i%2) treeAt(g,0,0,.9); else BUILD.lighthouse(g); });
+
+// 橋
+const bridges=[]; const islPos=i=>ISL[i].base;
+for(let i=0;i<ISL.length-1;i++){ const a=islPos(i), b=islPos(i+1); const mid=a.clone().add(b).multiplyScalar(.5); const len=a.distanceTo(b)-2*RAD*.866+1.4;
+  const g=new THREE.Group(); g.position.copy(mid); g.rotation.y=Math.atan2(b.x-a.x,b.z-a.z); scene.add(g);
+  for(let k=0;k<5;k++) box(.9,.1,len/5-.04,k%2?"#c08b5c":"#b47c4e",0,TOP-.12,-len/2+len/10+k*len/5,g);
+  for(const x of [-.45,.45]) for(const z of [-len/2+.1,len/2-.1]) box(.07,.4,.07,WOOD,x,TOP-.1,z,g);
+  bridges.push(mid); }
+
+// 海面
+const seaGeo=new THREE.PlaneGeometry(260,260,90,90); seaGeo.rotateX(-Math.PI/2);
+const seaMat=new THREE.MeshStandardMaterial({color:0x6cc4d8,roughness:.35,metalness:.05,flatShading:true,transparent:true,opacity:.92});
+const sea=new THREE.Mesh(seaGeo,seaMat); sea.receiveShadow=true; scene.add(sea);
+const seaPos=seaGeo.attributes.position; const seaBase=Float32Array.from(seaPos.array);
+
+// 星空
+const starGeo=new THREE.BufferGeometry(); const sp=[]; for(let i=0;i<500;i++){ const th=Math.random()*Math.PI*2, ph=Math.random()*Math.PI*.42; sp.push(Math.cos(th)*Math.sin(ph)*180, Math.cos(ph)*180, Math.sin(th)*Math.sin(ph)*180); }
+starGeo.setAttribute("position",new THREE.Float32BufferAttribute(sp,3));
+const starMat=new THREE.PointsMaterial({color:0xfff6dc,size:1.1,transparent:true,opacity:0,fog:false}); scene.add(new THREE.Points(starGeo,starMat));
+
+/* 恩典線 */
+const graceGroup=new THREE.Group(); scene.add(graceGroup);
+const graceLines=GRACE.map(([a,b,label])=>{
+  const pa=new THREE.Vector3(), pb=new THREE.Vector3(); storyObj[a].getWorldPosition(pa); storyObj[b].getWorldPosition(pb);
+  pa.y+=1.4; pb.y+=1.4; const d=pa.distanceTo(pb); const mid=pa.clone().add(pb).multiplyScalar(.5); mid.y+=4+d*.32;
+  const curve=new THREE.QuadraticBezierCurve3(pa,mid,pb);
+  const mat=new THREE.MeshBasicMaterial({color:0xffc53d,transparent:true,opacity:.0,depthWrite:false});
+  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,48,.07,6,false),mat); graceGroup.add(tube);
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshBasicMaterial({color:0xfff2b0,transparent:true,opacity:0})); graceGroup.add(dot);
+  return {a,b,label,curve,tube,dot,t:Math.random(),on:0};
+});
+
+/* 選取標記與搜尋圖釘 */
+const ringMark=new THREE.Mesh(new THREE.TorusGeometry(1.15,.08,8,40),new THREE.MeshBasicMaterial({color:0xffc53d}));
+ringMark.rotation.x=Math.PI/2; ringMark.visible=false; scene.add(ringMark);
+const pinGeo=new THREE.ConeGeometry(.26,.6,8); pinGeo.rotateX(Math.PI);
+const pinMat=new THREE.MeshStandardMaterial({color:0x2f6fd1,emissive:0x2f6fd1,emissiveIntensity:.35,flatShading:true});
+const pinGold=new THREE.MeshStandardMaterial({color:0xf4bd3c,emissive:0xf4bd3c,emissiveIntensity:.35,flatShading:true});
+const pins=[]; for(let i=0;i<60;i++){ const p=new THREE.Mesh(pinGeo,pinMat); p.visible=false; scene.add(p); pins.push(p); }
+const todayStar=new THREE.Mesh(new THREE.OctahedronGeometry(.32,0),glowMat); scene.add(todayStar);
+
+/* 小羊 */
+const lamb=new THREE.Group(); scene.add(lamb);
+{ ball(.32,WHITE,0,.42,0,lamb,1).scale.set(1.3,.95,1); ball(.17,"#3c3a4a",0,.62,.4,lamb,0); ball(.07,WHITE,0,.8,.38,lamb,0);
+  lamb.userData.legs=[]; for(const lx of [-.15,.15]) for(const lz of [-.16,.16]){ const l=box(.07,.26,.07,"#3c3a4a",lx,0,lz,lamb); lamb.userData.legs.push(l);}
+  lamb.scale.setScalar(.95); lamb.userData.lamb=true; pickables.push(lamb); }
+const route=[];
+ISL.forEach((isl,i)=>{
+  isl.ids.forEach(id=>{ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); const c=isl.base; const dir=c.clone().sub(w); dir.y=0; if(dir.length()<.1) dir.set(0,0,1); dir.normalize(); w.add(dir.multiplyScalar(1.15)); w.y=TOP; route.push({p:w,id}); });
+  if(i<ISL.length-1){ const m=bridges[i].clone(); m.y=TOP; route.push({p:m}); }
+});
+let lambSeg=0, lambT=0, lambWait=0, lambVisit=null;
+
+/* ---------------- 天空與時間 ---------------- */
+const SKY=[[0,"#141a33","#2c3463",.18,1],[4.5,"#262b55","#55507e",.25,.85],[5.8,"#6d7cbf","#f3b08c",.55,.35],[7,"#7fbbe8","#ffe1b4",.85,0],[10,"#68b5ea","#d3ecf8",1,0],[15,"#66afe6","#d8edf6",1,0],[17.2,"#6d93d4","#ffd09a",.82,.05],[18.4,"#4f5598","#f39270",.55,.4],[19.4,"#262c58","#4f4878",.28,.85],[24,"#141a33","#2c3463",.18,1]];
+const cA=new THREE.Color(), cB=new THREE.Color();
+function lerpHex(a,b,t){ cA.set(a); cB.set(b); return cA.lerp(cB,t).getHexString(); }
+let liveMode=true, hourNow=12, night=0;
+function taipeiNow(){ const f=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Taipei",hour:"2-digit",minute:"2-digit",hour12:false,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+  const o={}; f.forEach(p=>o[p.type]=p.value); return {h:+o.hour%24, m:+o.minute, y:+o.year, mo:+o.month, d:+o.day}; }
+function period(h){ return h<5?"深夜":h<7?"清晨":h<11?"上午":h<13?"中午":h<17?"午後":h<19?"傍晚":"夜晚"; }
+function applySky(h){
+  let k=0; while(k<SKY.length-2 && SKY[k+1][0]<=h) k++; const a=SKY[k], b=SKY[k+1]; const t=(h-a[0])/(b[0]-a[0]);
+  const top="#"+lerpHex(a[1],b[1],t), bot="#"+lerpHex(a[2],b[2],t); const inten=a[3]+(b[3]-a[3])*t; night=a[4]+(b[4]-a[4])*t;
+  document.getElementById("sky").style.background=`linear-gradient(180deg, ${top} 0%, ${bot} 62%, ${bot} 100%)`;
+  scene.fog.color.set(bot);
+  const ang=(h-6)/12*Math.PI; const day=Math.sin(ang);
+  const sx=Math.cos(ang)*40, sy=Math.max(Math.abs(day),.45)*42; sun.position.set(day>0?sx:-sx, sy, 22);
+  sun.intensity=.25+inten*.85; sun.color.set(day>0?(h<8||h>16.5?"#ffc58f":"#fff1d6"):"#9fb0ff");
+  hemi.intensity=.35+inten*.45; hemi.color.set(day>0?"#fff3dc":"#8e9be0");
+  seaMat.color.set("#"+lerpHex("#6cc4d8","#24365e",night));
+  starMat.opacity=Math.max(0,night-.2)*1.1; winMat.emissiveIntensity=night*1.5;
+  ISL[14].halo.intensity=.3+night*1.4;
+  renderer.toneMappingExposure=1;
+}
+const clockEl=document.getElementById("clock"), periodEl=document.getElementById("period"), hourIn=document.getElementById("hour"), hourOut=document.getElementById("hourOut"), nowBtn=document.getElementById("nowBtn");
+function tick(){ const n=taipeiNow(); clockEl.textContent=String(n.h).padStart(2,"0")+":"+String(n.m).padStart(2,"0"); periodEl.textContent=period(n.h);
+  if(liveMode){ hourNow=n.h+n.m/60; hourIn.value=hourNow; hourOut.textContent="即時"; applySky(hourNow); } }
+hourIn.addEventListener("input",()=>{ liveMode=false; hourNow=+hourIn.value; const hh=Math.floor(hourNow)%24, mm=Math.round((hourNow%1)*60); hourOut.textContent=String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0"); nowBtn.hidden=false; applySky(hourNow); });
+nowBtn.addEventListener("click",()=>{ liveMode=true; nowBtn.hidden=true; tick(); });
+
+/* 今日故事 */
+const tn=taipeiNow(); const doy=Math.floor((Date.UTC(tn.y,tn.mo-1,tn.d)-Date.UTC(tn.y,0,0))/864e5); const TODAY=((doy-1)%60)+1;
+{ const w=new THREE.Vector3(); storyObj[TODAY].getWorldPosition(w); todayStar.position.set(w.x,w.y+2.9,w.z); todayStar.userData.baseY=w.y+2.9; }
+
+/* ---------------- UI ---------------- */
+const panelBody=document.getElementById("panelBody"), panel=document.getElementById("panel");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const isNT=id=>id>=36;
+let zyOn=false; try{ zyOn=localStorage.getItem("grace-zy")==="1"; }catch(e){}
+function zf(z){ const light=z[0]==="˙"; let b=light?z.slice(1):z, tone=""; if("ˊˇˋ".includes(b.slice(-1))){ tone=b.slice(-1); b=b.slice(0,-1); }
+  return `<span class="zb" aria-hidden="true"><span class="zs">${light?'<i class="lt">˙</i>':""}${[...b].map(c=>`<i>${c}</i>`).join("")}</span>${tone?`<i class="tn">${tone}</i>`:""}</span>`; }
+function Z(text,arr){ if(!zyOn||!arr) return esc(text); return [...text].map((c,i)=>arr[i]?`<span class="zc">${esc(c)}${zf(arr[i])}</span>`:esc(c)).join(""); }
+let view={type:"home"};
+const peopleOf=id=>PEOPLE.map((p,k)=>[p,k]).filter(([p])=>p[2].includes(id));
+const pchip=k=>{ const p=PEOPLE[k]; return `<button class="pchip ${k>=25?"nt":""}" data-person="${k}"><span class="av">${esc(p[0][0])}</span>${esc(p[0])}<em>${p[2].length}</em></button>`; };
+const numTag=id=>`<span class="n ${isNT(id)?"nt":""}">${id}</span>`;
+const pdf=(s,cb)=>`https://bibleforchildren.org/PDFs/chinese_traditional/${s.slug}_ChineseT${cb?"_CB":""}.pdf`;
+const verseUrl=s=>`https://www.biblegateway.com/passage/?search=${encodeURIComponent(s.v[1])}&version=CUV`;
+const bg=s=>`https://www.biblegateway.com/passage/?search=${encodeURIComponent(s.bk)}&version=CUV`;
+const itemBtn=(id,extra="")=>{ const s=STORY[id]; return `<button class="item ${extra}" data-story="${id}">${numTag(id)}<b>${esc(s.t)}</b><span>${esc(s.ref)}</span></button>`; };
+const ICON={book:'<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5c3-1.5 5.5-1.5 8 0v15c-2.5-1.5-5-1.5-8 0zM12 5c2.5-1.5 5-1.5 8 0v15c-3-1.5-5.5-1.5-8 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+ pen:'<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1L19 8l-3-3L5 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+ scroll:'<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 9h6M9 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'};
+
+function renderHome(){
+  view={type:"home"};
+  const t=STORY[TODAY];
+  panelBody.innerHTML=`
+    <h3>歡迎上島</h3>
+    <h2>${Z("從起初的園子，一路走到天家",ZY.h[0])}</h2>
+    <p class="lede">${Z("60 則兒童聖經故事蓋成一座玩具小城。14 座故事島按聖經順序排成螺旋，木橋把它們連起來，終點是中央的「天家」。",ZY.h[1])}</p>
+    <button class="item today" data-story="${TODAY}">${numTag(TODAY)}<b>${esc(t.t)}</b><span>${esc(t.sum)}</span></button>
+    <ul class="how">
+      <li><b>拖曳</b>旋轉島嶼，<b>滾輪／雙指</b>縮放，點一下建築就能讀故事。</li>
+      <li><b>恩典線</b>把前後呼應的故事連起來，例如約拿的三天與耶穌的復活。</li>
+      <li>每則故事都配一節<b>和合本金句</b>，搜尋也找得到經文裡的字。</li>
+      <li>下方<b>時間軸</b>按年代排出 60 則故事，按「依年代播放」就會一站一站帶你走。</li>
+      <li>天空跟著台北的時間變化，夜裡家家點燈。小羊會沿著木橋一站一站拜訪故事。</li>
+    </ul>
+    <h3>依人物找故事</h3>
+    <div class="people">${PEOPLE.map((p,k)=>pchip(k)).join("")}</div>
+    <h3>15 座島</h3>
+    <div class="grid-isl">${ISL.map((s,i)=>`<button data-isl="${i}"><span>${esc(s.name)}</span><em>${s.ids.length} 則</em></button>`).join("")}</div>
+    <p class="foot">故事標題、經文出處與 PDF 來自 <a href="https://bibleforchildren.org/languages/chinese_traditional/stories.php" target="_blank" rel="noopener">兒童聖經故事 Bible for Children</a>（非商業用途免費）。島上摘要為本站改寫。</p>`;
+}
+function renderIsland(i){
+  view={type:"isl",id:i};
+  const s=ISL[i];
+  panelBody.innerHTML=`
+    <button class="back" data-home>← 全島地圖</button>
+    <div class="eyebrow"><span class="pill ${s.nt?"nt":"ot"}">${s.nt?"新約":"舊約"}</span><span>${esc(s.era)}</span><span>・${s.ids.length} 則故事</span></div>
+    <h2>${Z(s.name,ZY.i[i])}</h2>
+    <div class="list">${s.ids.map(id=>itemBtn(id)).join("")}</div>
+    ${neighbors(i)}`;
+}
+function neighbors(i){ const prev=ISL[i-1], next=ISL[i+1]; return `<div class="actions">${prev?`<button class="btn" data-isl="${i-1}">← ${esc(prev.name)}</button>`:""}${next?`<button class="btn" data-isl="${i+1}">${esc(next.name)} →</button>`:""}</div>`; }
+function renderPeople(){
+  view={type:"people"};
+  panelBody.innerHTML=`
+    <button class="back" data-home>← 全島地圖</button>
+    <h3>人物</h3>
+    <h2>${Z("依人物找故事",ZY.ui[0])}</h2>
+    <p class="lede">點一位人物，島上會插上金色旗子標出他出現的故事，時間軸也會亮起來。</p>
+    <h3>舊約人物</h3><div class="people">${PEOPLE.slice(0,25).map((p,k)=>pchip(k)).join("")}</div>
+    <h3>新約人物</h3><div class="people">${PEOPLE.slice(25).map((p,k)=>pchip(k+25)).join("")}</div>`;
+}
+function renderPerson(k){
+  view={type:"person",id:k};
+  const p=PEOPLE[k], ids=[...p[2]].sort((a,b)=>TL.indexOf(a)-TL.indexOf(b));
+  const y0=STORY[ids[0]].yr, y1=STORY[ids[ids.length-1]].yr;
+  panelBody.innerHTML=`
+    <button class="back" data-people>← 所有人物</button>
+    <div class="eyebrow"><span class="pill ${k>=25?"nt":"ot"}">${k>=25?"新約":"舊約"}</span><span>出現在 ${ids.length} 則故事</span><span>・${esc(y0)}${y0!==y1?" – "+esc(y1):""}</span></div>
+    <h2>${Z(p[0],ZY.p[k][0])}</h2>
+    <p class="lede">${Z(p[1],ZY.p[k][1])}</p>
+    <div class="actions"><button class="btn primary" data-playperson="${k}">依年代走一遍他的故事</button></div>
+    <div class="list">${ids.map(id=>`<button class="item" data-story="${id}">${numTag(id)}<b>${esc(STORY[id].t)}</b><span>${esc(STORY[id].yr)}・${esc(ISL[STORY[id].isl].name)}</span></button>`).join("")}</div>`;
+}
+function renderStory(id){
+  view={type:"story",id};
+  const s=STORY[id], isl=ISL[s.isl];
+  const links=GRACE.filter(g=>g[0]===id||g[1]===id);
+  panelBody.innerHTML=`
+    <button class="back" data-isl="${s.isl}">← ${esc(isl.name)}</button>
+    <div class="eyebrow">${numTag(id)}<span class="pill ${isNT(id)?"nt":"ot"}">${isNT(id)?"新約":"舊約"}</span><span>${esc(s.yr)}</span>${id===TODAY?'<span class="pill">今日故事</span>':""}</div>
+    <h2>${Z(s.t,ZY.t[id])}</h2>
+    <p class="lede">${Z(s.sum,ZY.s[id])}</p>
+    <figure class="verse">
+      <blockquote>${Z(s.v[2],ZY.v[id])}</blockquote>
+      <figcaption><span>${esc(s.v[0])}・和合本</span><a href="${verseUrl(s)}" target="_blank" rel="noopener">看上下文</a><button class="copy" data-copy="${id}">複製金句</button></figcaption>
+    </figure>
+    <div class="eyebrow"><span>故事經文段落：${esc(s.ref)}</span></div>
+    ${peopleOf(id).length?`<h3>故事裡的人物</h3><div class="people">${peopleOf(id).map(([p,k])=>pchip(k)).join("")}</div>`:""}
+    <div class="links">
+      <a class="link" href="${pdf(s)}" target="_blank" rel="noopener">${ICON.book}<div><b>閱讀圖畫故事</b><span>兒童聖經故事 PDF・繁體中文</span></div></a>
+      <a class="link" href="${pdf(s,true)}" target="_blank" rel="noopener">${ICON.pen}<div><b>下載著色本</b><span>可列印的彩圖 PDF</span></div></a>
+      <a class="link" href="${bg(s)}" target="_blank" rel="noopener">${ICON.scroll}<div><b>讀整段和合本經文</b><span>${esc(s.ref)}</span></div></a>
+    </div>
+    ${links.length?`<h3>恩典線</h3><div class="list">${links.map(g=>{const o=g[0]===id?g[1]:g[0]; return `<button class="item" data-story="${o}">${numTag(o)}<b>${esc(STORY[o].t)}</b><span>${esc(g[2])}</span></button>`;}).join("")}</div>`:""}
+    <div class="actions">${id>1?`<button class="btn" data-story="${id-1}">← 第 ${id-1} 則</button>`:""}${id<60?`<button class="btn primary" data-story="${id+1}">第 ${id+1} 則 →</button>`:""}</div>`;
+}
+panel.addEventListener("click",e=>{
+  const cp=e.target.closest("[data-copy]"); if(cp){ const s=STORY[+cp.dataset.copy]; const txt=`${s.v[2]}（${s.v[0]}，和合本）`;
+    const done=()=>{ cp.textContent="已複製"; setTimeout(()=>cp.textContent="複製金句",1600); };
+    const fallback=()=>{ const q=cp.closest(".verse").querySelector("blockquote"); const r=document.createRange(); r.selectNodeContents(q); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); cp.textContent="已選取，請按複製"; };
+    try{ navigator.clipboard.writeText(txt).then(done,fallback); }catch(err){ fallback(); } return; }
+  const pp=e.target.closest("[data-playperson]"); if(pp){ startPlay(PEOPLE[+pp.dataset.playperson][2]); return; }
+  const pc=e.target.closest("[data-person]"); if(pc){ selectPerson(+pc.dataset.person); return; }
+  if(e.target.closest("[data-people]")){ showPeople(); return; }
+  const b=e.target.closest("[data-story],[data-isl],[data-home]"); if(!b) return;
+  if(b.dataset.story) selectStory(+b.dataset.story); else if(b.dataset.isl){ clearPerson(); selectIsland(+b.dataset.isl); } else { clearPerson(); goHome(); } });
+const zyBtn=document.getElementById("zyBtn");
+function applyZy(){ zyBtn.setAttribute("aria-pressed",zyOn); panel.classList.toggle("zy",zyOn); }
+function rerender(){ const v=view; if(v.type==="home") renderHome(); else if(v.type==="isl") renderIsland(v.id); else if(v.type==="story") renderStory(v.id); else if(v.type==="people") renderPeople(); else if(v.type==="person") renderPerson(v.id); }
+zyBtn.addEventListener("click",()=>{ zyOn=!zyOn; try{ localStorage.setItem("grace-zy",zyOn?"1":"0"); }catch(e){} applyZy(); const st=panelBody.scrollTop; rerender(); panelBody.scrollTop=st; });
+applyZy();
+document.getElementById("peopleBtn").addEventListener("click",showPeople);
+let personSel=null;
+function showPeople(){ clearPerson(); setSelected(null); renderPeople(); panelBody.scrollTop=0; panel.classList.remove("collapsed"); }
+function clearPerson(){ if(personSel===null) return; personSel=null; pins.forEach(p=>p.visible=false); Object.values(dots).forEach(d=>d.classList.remove("hit")); }
+function selectPerson(k){ stopPlay(); qEl.value=""; resEl.hidden=true; personSel=k; setSelected(null);
+  const ids=PEOPLE[k][2]; pins.forEach(p=>p.visible=false); Object.values(dots).forEach(d=>d.classList.remove("hit"));
+  const box=new THREE.Box3();
+  ids.forEach((id,i)=>{ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); box.expandByPoint(w); const p=pins[i]; p.material=pinGold; p.position.set(w.x,w.y+2.4,w.z); p.userData.baseY=w.y+2.4; p.visible=true; dots[id].classList.add("hit"); });
+  renderPerson(k); panelBody.scrollTop=0; panel.classList.remove("collapsed");
+  const c=box.getCenter(new THREE.Vector3()), sz=box.getSize(new THREE.Vector3()); flyTo(c,Math.max(22,Math.max(sz.x,sz.z)*1.5+18)); }
+document.getElementById("handle").addEventListener("click",()=>panel.classList.toggle("collapsed"));
+
+let selected=null;
+function setSelected(id){ selected=id; syncTimeline(id); if(id){ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); ringMark.position.set(w.x,w.y+.08,w.z); ringMark.visible=true; } else ringMark.visible=false; }
+function selectStory(id,fly=true){ setSelected(id); renderStory(id); panelBody.scrollTop=0; panel.classList.remove("collapsed"); if(fly){ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); flyTo(w,20); } }
+function selectIsland(i){ setSelected(null); renderIsland(i); panelBody.scrollTop=0; panel.classList.remove("collapsed"); flyTo(ISL[i].base.clone(),28); }
+function goHome(){ setSelected(null); renderHome(); panelBody.scrollTop=0; flyTo(HOME.clone(),innerWidth<760?102:68); }
+
+/* 鏡頭飛行 */
+let fly=null;
+function flyTo(target,dist){ const dir=camera.position.clone().sub(controls.target); dir.y=Math.max(dir.y,dir.length()*.55); dir.normalize();
+  const toPos=target.clone().add(dir.multiplyScalar(dist));
+  if(reduce){ controls.target.copy(target); camera.position.copy(toPos); return; }
+  fly={t:0,fromT:controls.target.clone(),toT:target.clone(),fromP:camera.position.clone(),toP:toPos}; }
+
+/* 島名標籤 */
+const labelsEl=document.getElementById("labels");
+ISL.forEach((s,i)=>{ const b=document.createElement("button"); b.className="isl"+(s.home?" home":""); b.innerHTML=`<span class="dot" style="background:${s.home?"#fff":s.top}"></span>${esc(s.name)} <small>${s.ids.length}</small>`; b.setAttribute("aria-label",`${s.name}，${s.ids.length} 則故事`);
+  b.addEventListener("click",()=>selectIsland(i)); labelsEl.appendChild(b); s.label=b; });
+
+/* 時間軸 */
+const tlTrack=document.getElementById("tlTrack"), tlScroll=document.getElementById("tlScroll"), tlNow=document.getElementById("tlNow");
+const dots={};
+ERAS.forEach(([name,span,ids,col])=>{ const e=document.createElement("div"); e.className="era"; e.style.setProperty("--n",ids.length); e.style.setProperty("--era",col);
+  const short=span==="約西元前5年–30年"?"西元前5年–30年":span.replace(/^約/,"").replace(/(\d)年/g,"$1");
+  e.innerHTML=`<span title="${esc(name)}・${esc(span)}"><b>${esc(name)}</b><small>${esc(short)}</small></span><div class="dots"></div>`;
+  const row=e.querySelector(".dots");
+  ids.forEach(id=>{ const s=STORY[id]; const d=document.createElement("button"); d.className="dot"+(id===TODAY?" is-today":""); d.setAttribute("aria-label",`第 ${id} 則〈${s.t}〉${s.yr}`); d.title=`${id}. ${s.t}・${s.yr}`;
+    d.addEventListener("click",()=>{ stopPlay(); selectStory(id); }); row.appendChild(d); dots[id]=d; });
+  tlTrack.appendChild(e); });
+function syncTimeline(id){ Object.values(dots).forEach(d=>d.classList.remove("on")); if(!id){ tlNow.innerHTML="點一個圓點，跳到那個年代的故事"; return; }
+  const s=STORY[id], d=dots[id]; d.classList.add("on"); const era=ERAS[s.era];
+  tlNow.innerHTML=`<b>${esc(s.yr)}</b>・${esc(era[0])}・${esc(s.t)}`;
+  const L=d.offsetLeft-tlScroll.clientWidth/2; if(tlScroll.scrollWidth>tlScroll.clientWidth) tlScroll.scrollTo({left:L,behavior:reduce?"auto":"smooth"}); }
+let playTimer=null; const playBtn=document.getElementById("playBtn"), playLabel=document.getElementById("playLabel"), playIcon=document.getElementById("playIcon");
+function stopPlay(){ if(!playTimer) return; clearInterval(playTimer); playTimer=null; playBtn.classList.remove("playing"); playBtn.setAttribute("aria-pressed","false"); playLabel.textContent="依年代播放"; playIcon.setAttribute("d","M7 4l13 8-13 8z"); }
+let playList=TL;
+function step(){ const i=selected?playList.indexOf(selected):-1; if(i>=playList.length-1){ stopPlay(); return; } selectStory(playList[i+1]); }
+function startPlay(list){ stopPlay(); playList=list?[...list].sort((a,b)=>TL.indexOf(a)-TL.indexOf(b)):TL; playBtn.classList.add("playing"); playBtn.setAttribute("aria-pressed","true"); playLabel.textContent="暫停"; playIcon.setAttribute("d","M6 4h4v16H6zM14 4h4v16h-4z");
+  if(!playList.includes(selected)||selected===playList[playList.length-1]) setSelected(null); step(); playTimer=setInterval(step,4200); }
+playBtn.addEventListener("click",()=>{ if(playTimer){ stopPlay(); return; } startPlay(personSel!==null?PEOPLE[personSel][2]:null); });
+
+/* 篩選 */
+let filter="all";
+function setFilter(f){ filter=f; ["all","ot","nt"].forEach(k=>document.getElementById("f-"+k).setAttribute("aria-pressed",k===f));
+  ISL.forEach(s=>{ const off=(f==="ot"&&s.nt)||(f==="nt"&&!s.nt); s.sinkTarget=off?-1.3:0; s.label.classList.toggle("dim",off); }); }
+["all","ot","nt"].forEach(k=>document.getElementById("f-"+k).addEventListener("click",()=>setFilter(k)));
+
+/* 恩典線開關 */
+let graceAll=false; const graceBtn=document.getElementById("graceBtn");
+graceBtn.addEventListener("click",()=>{ graceAll=!graceAll; graceBtn.setAttribute("aria-pressed",graceAll); });
+
+/* 搜尋 */
+function hl(t,q){ const i=t.toLowerCase().indexOf(q); const a=Math.max(0,i-14), b=Math.min(t.length,i+q.length+18); return (a>0?"…":"")+esc(t.slice(a,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length,b))+(b<t.length?"…":""); }
+const qEl=document.getElementById("q"), resEl=document.getElementById("results");
+let matches=[];
+function doSearch(){ const q=qEl.value.trim().toLowerCase(); matches=[];
+  if(!q){ resEl.hidden=true; if(personSel===null) pins.forEach(p=>p.visible=false); return; }
+  pins.forEach(p=>p.visible=false);
+  matches=S.map(a=>STORY[a[0]]).filter(s=>(s.t+s.sum+s.ref+s.v[0]+s.v[2]+ISL[s.isl].name+ISL[s.isl].era).toLowerCase().includes(q));
+  personSel=null; Object.values(dots).forEach(d=>d.classList.remove("hit"));
+  matches.forEach((s,i)=>{ const p=pins[i]; p.material=pinMat; const w=new THREE.Vector3(); storyObj[s.id].getWorldPosition(w); p.position.set(w.x,w.y+2.4,w.z); p.userData.baseY=w.y+2.4; p.visible=true; });
+  resEl.innerHTML=matches.length? `<div class="results-head" style="padding:4px 10px;font-size:12px;color:var(--ink-soft)">找到 ${matches.length} 則故事，島上的藍色圖釘標出位置</div>`+matches.slice(0,12).map(s=>`<button data-story="${s.id}">${numTag(s.id)}<span class="t">${esc(s.t)}</span><span class="s">${esc(ISL[s.isl].name)}・${esc(s.yr)}</span>${s.v[2].toLowerCase().includes(q)?`<span class="v">${hl(s.v[2],q)}（${esc(s.v[0])}）</span>`:""}</button>`).join("")
+    : `<div class="empty">沒有找到「${esc(qEl.value)}」。試試人物名字，例如「摩西」「彼得」，或主題如「禱告」「饒恕」。</div>`;
+  resEl.hidden=false; }
+qEl.addEventListener("input",doSearch);
+qEl.addEventListener("keydown",e=>{ if(e.key==="Enter"&&matches[0]){ selectStory(matches[0].id); resEl.hidden=true; } if(e.key==="Escape"){ qEl.value=""; doSearch(); } });
+resEl.addEventListener("click",e=>{ const b=e.target.closest("[data-story]"); if(b){ selectStory(+b.dataset.story); resEl.hidden=true; } });
+document.addEventListener("pointerdown",e=>{ if(!e.target.closest(".search")) resEl.hidden=true; });
+qEl.addEventListener("focus",()=>{ if(qEl.value.trim()) resEl.hidden=false; });
+
+/* 小羊 */
+const lambNote=document.getElementById("lambNote");
+document.getElementById("lambBtn").addEventListener("click",()=>{ flyTo(lamb.position.clone(),14); if(lambVisit) lambNote.textContent=`小羊正在聽〈${STORY[lambVisit].t}〉`; });
+
+/* 點擊與滑過 */
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(), tip=document.getElementById("tip");
+function pick(e){ const r=canvas.getBoundingClientRect(); mouse.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(mouse,camera);
+  const hit=ray.intersectObjects(pickables,true)[0]; if(!hit) return null; let o=hit.object; while(o){ if(o.userData.sid) return {sid:o.userData.sid}; if(o.userData.lamb) return {lamb:true}; if(o.userData.island!==undefined) return {isl:o.userData.island}; o=o.parent; } return null; }
+let down=null;
+canvas.addEventListener("pointerdown",e=>{ down={x:e.clientX,y:e.clientY}; fly=null; stopPlay(); });
+canvas.addEventListener("pointerup",e=>{ if(!down) return; const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y); down=null; if(moved>6) return;
+  const h=pick(e); if(!h) return; if(h.sid) selectStory(h.sid); else if(h.lamb){ if(lambVisit) selectStory(lambVisit); } else if(h.isl!==undefined) selectIsland(h.isl); });
+canvas.addEventListener("pointermove",e=>{ if(e.pointerType!=="mouse"||e.buttons) { tip.hidden=true; return; } const h=pick(e);
+  canvas.classList.toggle("hovering",!!h);
+  if(h&&h.sid){ const s=STORY[h.sid]; tip.innerHTML=`${esc(s.t)}<small>${esc(ISL[s.isl].name)}・${esc(s.ref)}</small>`; tip.style.left=e.clientX+"px"; tip.style.top=e.clientY+"px"; tip.hidden=false; }
+  else if(h&&h.lamb){ tip.innerHTML=`小羊<small>${lambVisit?`正在聽〈${esc(STORY[lambVisit].t)}〉，點我一起看`:"正在過橋"}</small>`; tip.style.left=e.clientX+"px"; tip.style.top=e.clientY+"px"; tip.hidden=false; }
+  else tip.hidden=true; });
+canvas.addEventListener("pointerleave",()=>{ tip.hidden=true; });
+
+/* 尺寸 */
+function resize(){ const w=innerWidth, h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  if(w<760){ camera.fov=48; } else camera.fov=34; camera.updateProjectionMatrix(); }
+addEventListener("resize",resize); resize();
+const HOME=innerWidth<760?new THREE.Vector3(0,0,8):new THREE.Vector3(7,0,1);
+if(innerWidth<760){ camera.position.set(4,74,72); } else camera.position.set(13,44,51);
+controls.target.copy(HOME);
+
+/* ---------------- 動畫迴圈 ---------------- */
+const clock=new THREE.Clock(); const tmp=new THREE.Vector3();
+function frame(){
+  const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
+  // 海浪
+  const arr=seaPos.array; for(let i=0;i<arr.length;i+=3){ const x=seaBase[i], z=seaBase[i+2]; arr[i+1]=reduce?0:Math.sin(x*.18+t*.9)*.12+Math.cos(z*.22+t*.7)*.1; } seaPos.needsUpdate=true;
+  // 島嶼浮動與下沉
+  ISL.forEach(s=>{ s.sink+=(s.sinkTarget-s.sink)*Math.min(1,dt*3); s.group.position.y=(reduce?0:Math.sin(t*.6+s.phase)*.06)+s.sink; });
+  // 火焰、星星、燈
+  animated.forEach((o,i)=>{ if(o.userData.flame){ o.scale.y=1+Math.sin(t*9+i)*.15; } if(o.userData.star){ o.rotation.y=t*1.2; o.position.y+=Math.sin(t*2)*.002; } if(o.userData.lamp){ o.material=glowMat; } });
+  glowMat.emissiveIntensity=.6+night*1.4;
+  todayStar.rotation.y=t*1.5; todayStar.position.y=todayStar.userData.baseY+Math.sin(t*2)*.2;
+  pins.forEach((p,i)=>{ if(p.visible) p.position.y=p.userData.baseY+Math.abs(Math.sin(t*3+i*.4))*.35; });
+  ringMark.scale.setScalar(1+Math.sin(t*3)*.06);
+  // 恩典線
+  graceLines.forEach(g=>{ const want=(selected&&(g.a===selected||g.b===selected))?1:graceAll?.6:0; g.on+=(want-g.on)*Math.min(1,dt*4);
+    g.tube.material.opacity=g.on*.85; g.tube.visible=g.on>.01; g.dot.visible=g.on>.01; g.dot.material.opacity=g.on;
+    g.t=(g.t+dt*.22)%1; g.curve.getPoint(g.t,tmp); g.dot.position.copy(tmp); });
+  // 小羊
+  if(lambWait>0){ lambWait-=dt; } else {
+    const a=route[lambSeg].p, b=route[(lambSeg+1)%route.length].p; const len=a.distanceTo(b);
+    if(lambSeg===route.length-1){ lambSeg=0; lambT=0; lamb.position.copy(route[0].p); }
+    else { lambT+=dt*1.5/len; if(lambT>=1){ lambT=0; lambSeg++; const r=route[lambSeg]; if(r.id){ lambWait=2.6; lambVisit=r.id; lambNote.textContent=`小羊正在聽〈${STORY[r.id].t}〉`; } else { lambVisit=null; lambNote.textContent="小羊正在過橋…"; } }
+      lamb.position.lerpVectors(a,b,lambT); lamb.rotation.y=Math.atan2(b.x-a.x,b.z-a.z); } }
+  const isl=lambVisit?ISL[STORY[lambVisit].isl]:null; lamb.position.y=TOP+(isl?isl.group.position.y:0)+(lambWait>0?Math.abs(Math.sin(t*5))*.12:0);
+  lamb.userData.legs.forEach((l,i)=>{ l.rotation.x=lambWait>0?0:Math.sin(t*12+i*Math.PI)*.5; });
+  // 鏡頭
+  if(fly){ fly.t=Math.min(1,fly.t+dt/1.1); const e=fly.t<.5?2*fly.t*fly.t:1-Math.pow(-2*fly.t+2,2)/2; controls.target.lerpVectors(fly.fromT,fly.toT,e); camera.position.lerpVectors(fly.fromP,fly.toP,e); if(fly.t>=1) fly=null; }
+  controls.update();
+  
+  renderer.render(scene,camera);
+  // 標籤投影
+  const W=innerWidth, H=innerHeight;
+  ISL.forEach(s=>{ tmp.copy(s.base); tmp.y=s.group.position.y+(s.home?4.6:3.4); tmp.project(camera);
+    const vis=tmp.z<1 && tmp.x>-1.2 && tmp.x<1.2 && tmp.y>-1.2 && tmp.y<1.2; s.label.hidden=!vis;
+    if(vis) s.label.style.transform=`translate(${(tmp.x*.5+.5)*W}px,${(-tmp.y*.5+.5)*H}px) translate(-50%,-100%)`; });
+  requestAnimationFrame(frame);
+}
+
+renderHome(); tick(); setInterval(tick,30000);
+frame();
+})();
+</script>
+</body>
+</html>
