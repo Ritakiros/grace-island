@@ -297,6 +297,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
       <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18C6 6 18 6 21 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="3" cy="18" r="2" fill="currentColor"/><circle cx="21" cy="18" r="2" fill="currentColor"/></svg>
       恩典線
     </button>
+    <button class="btn" id="jesusBtn">
+      <svg width="16" height="18" viewBox="0 0 22 26" aria-hidden="true"><circle cx="11" cy="6" r="4" fill="#f0d0ae" stroke="currentColor" stroke-width="2"/><path d="M5 25l2-13h8l2 13z" fill="#fff" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 12l6 13" stroke="#c0504a" stroke-width="2.5"/></svg>
+      找耶穌
+    </button>
     <button class="btn" id="lambBtn">
       <svg width="18" height="16" viewBox="0 0 26 22" aria-hidden="true"><ellipse cx="12" cy="11" rx="9" ry="7" fill="#fff" stroke="currentColor" stroke-width="2"/><circle cx="21" cy="8" r="3.4" fill="currentColor"/><path d="M7 17v4M16 17v4" stroke="currentColor" stroke-width="2"/></svg>
       找小羊
@@ -670,6 +674,17 @@ ISL.forEach((isl,i)=>{
   if(i<ISL.length-1){ const m=bridges[i].clone(); m.y=TOP; route.push({p:m}); }
 });
 let lambSeg=0, lambT=0, lambWait=0, lambVisit=null;
+// 走來走去的耶穌
+const walker=new THREE.Group(); scene.add(walker); walker.userData.jesus=true; pickables.push(walker);
+{ const W=walker;
+  cone(.32,1.0,10,WHITE,0,.1,0,W); box(.44,.07,.34,"#e9c46a",0,.62,0,W);
+  const m=box(.14,.62,.36,"#c0504a",.08,.38,0,W); m.rotation.z=.42;
+  ball(.16,"#f0d0ae",0,1.25,0,W,1); const hr=ball(.17,"#7a5232",0,1.3,-.05,W,1); hr.scale.set(1,.85,1); const bd=ball(.1,"#7a5232",0,1.14,.08,W,0); bd.scale.set(1,.75,.6);
+  W.userData.arms=[-1,1].map(sx=>{ const a=new THREE.Group(); a.position.set(sx*.27,1.0,0); W.add(a); const b=box(.11,.46,.11,WHITE,0,-.46,0,a); ball(.06,"#f0d0ae",0,-.5,0,a,0); return a; });
+  W.userData.feet=[-1,1].map(sx=>box(.1,.08,.18,"#6b4a30",sx*.1,0,.04,W));
+  W.scale.setScalar(1.0); }
+const jRoute=[...route].reverse().concat(route.slice(1));
+let jSeg=Math.floor(route.length/2), jT=0, jWait=0, jVisit=null; walker.position.copy(jRoute[jSeg].p);
 
 
 /* ---------------- 天空與時間 ---------------- */
@@ -740,7 +755,7 @@ function renderHome(){
       <li>每則故事都配一節<b>和合本金句</b>，搜尋也找得到經文裡的字。</li>
       <li>下方<b>時間軸</b>按年代排出 60 則故事，按「依年代播放」就會一站一站帶你走。</li>
       <li>時間軸最後一站是<b>耶穌再來與新天新地</b>。點開它，天空會亮起溫暖的光，天使環繞，地上的小光點慢慢升到雲裡。</li>
-      <li>天空跟著台北的時間變化，夜裡家家點燈。小羊會沿著木橋一站一站拜訪故事。</li>
+      <li>天空跟著台北的時間變化，夜裡家家點燈。<b>耶穌</b>和<b>小羊</b>會在島上走來走去，按「找耶穌」就能找到祂。</li>
     </ul>
     <h3>依人物找故事</h3>
     <div class="people">${PEOPLE.map((p,k)=>pchip(k)).join("")}</div>
@@ -910,19 +925,25 @@ qEl.addEventListener("focus",()=>{ if(qEl.value.trim()) resEl.hidden=false; });
 
 /* 小羊 */
 const lambNote=document.getElementById("lambNote");
+function findJesus(openPage){ const k=PEOPLE.findIndex(p=>p[0]==="耶穌");
+  if(openPage) selectPerson(k);
+  const w=new THREE.Vector3(); if(RET.e>.5) RET.j.getWorldPosition(w); else w.copy(walker.position);
+  flyTo(w,14); lambNote.textContent=jVisit?`耶穌正在〈${STORY[jVisit].t}〉`:"耶穌正在島上走路"; }
+document.getElementById("jesusBtn").addEventListener("click",()=>findJesus(false));
 document.getElementById("lambBtn").addEventListener("click",()=>{ flyTo(lamb.position.clone(),14); if(lambVisit) lambNote.textContent=`小羊正在聽〈${STORY[lambVisit].t}〉`; });
 
 /* 點擊與滑過 */
 const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(), tip=document.getElementById("tip");
 function pick(e){ const r=canvas.getBoundingClientRect(); mouse.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1); ray.setFromCamera(mouse,camera);
-  const hit=ray.intersectObjects(pickables,true)[0]; if(!hit) return null; let o=hit.object; while(o){ if(o.userData.sid) return {sid:o.userData.sid}; if(o.userData.lamb) return {lamb:true}; if(o.userData.island!==undefined) return {isl:o.userData.island}; o=o.parent; } return null; }
+  const hit=ray.intersectObjects(pickables,true)[0]; if(!hit) return null; let o=hit.object; while(o){ if(o.userData.sid) return {sid:o.userData.sid}; if(o.userData.lamb) return {lamb:true}; if(o.userData.jesus) return {jesus:true}; if(o.userData.island!==undefined) return {isl:o.userData.island}; o=o.parent; } return null; }
 let down=null;
 canvas.addEventListener("pointerdown",e=>{ down={x:e.clientX,y:e.clientY}; fly=null; stopPlay(); });
 canvas.addEventListener("pointerup",e=>{ if(!down) return; const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y); down=null; if(moved>6) return;
-  const h=pick(e); if(!h) return; if(h.sid) selectStory(h.sid); else if(h.lamb){ if(lambVisit) selectStory(lambVisit); } else if(h.isl!==undefined) selectIsland(h.isl); });
+  const h=pick(e); if(!h) return; if(h.sid) selectStory(h.sid); else if(h.jesus){ findJesus(true); } else if(h.lamb){ if(lambVisit) selectStory(lambVisit); } else if(h.isl!==undefined) selectIsland(h.isl); });
 canvas.addEventListener("pointermove",e=>{ if(e.pointerType!=="mouse"||e.buttons) { tip.hidden=true; return; } const h=pick(e);
   canvas.classList.toggle("hovering",!!h);
   if(h&&h.sid){ const s=STORY[h.sid]; tip.innerHTML=`${esc(s.t)}<small>${esc(ISL[s.isl].name)}・${esc(s.ref)}</small>`; tip.style.left=e.clientX+"px"; tip.style.top=e.clientY+"px"; tip.hidden=false; }
+  else if(h&&h.jesus){ tip.innerHTML=`耶穌<small>${jVisit?`正在〈${esc(STORY[jVisit].t)}〉，點我看耶穌的故事`:"正在走路，點我看耶穌的故事"}</small>`; tip.style.left=e.clientX+"px"; tip.style.top=e.clientY+"px"; tip.hidden=false; }
   else if(h&&h.lamb){ tip.innerHTML=`小羊<small>${lambVisit?`正在聽〈${esc(STORY[lambVisit].t)}〉，點我一起看`:"正在過橋"}</small>`; tip.style.left=e.clientX+"px"; tip.style.top=e.clientY+"px"; tip.hidden=false; }
   else tip.hidden=true; });
 canvas.addEventListener("pointerleave",()=>{ tip.hidden=true; });
@@ -961,9 +982,18 @@ function frame(){
       lamb.position.lerpVectors(a,b,lambT); lamb.rotation.y=Math.atan2(b.x-a.x,b.z-a.z); } }
   const isl=lambVisit?ISL[STORY[lambVisit].isl]:null; lamb.position.y=TOP+(isl?isl.group.position.y:0)+(lambWait>0?Math.abs(Math.sin(t*5))*.12:0);
   lamb.userData.legs.forEach((l,i)=>{ l.rotation.x=lambWait>0?0:Math.sin(t*12+i*Math.PI)*.5; });
+  if(jWait>0){ jWait-=dt; } else {
+    const a=jRoute[jSeg%jRoute.length].p, b=jRoute[(jSeg+1)%jRoute.length].p, len=a.distanceTo(b);
+    if(len<.01){ jSeg=(jSeg+1)%jRoute.length; jT=0; }
+    else { jT+=dt*1.05/len; if(jT>=1){ jT=0; jSeg=(jSeg+1)%jRoute.length; const r=jRoute[jSeg]; if(r.id){ jWait=3.4; jVisit=r.id; } else jVisit=null; }
+      walker.position.lerpVectors(a,b,jT); walker.rotation.y=Math.atan2(b.x-a.x,b.z-a.z); } }
+  { const ji=jVisit?ISL[STORY[jVisit].isl]:null; walker.position.y=TOP+(ji?ji.group.position.y:0)+(jWait>0?0:Math.abs(Math.sin(t*6))*.05);
+    const sw=jWait>0?0:Math.sin(t*6); walker.userData.arms[0].rotation.x=sw*.5; walker.userData.arms[1].rotation.x=-sw*.5; walker.userData.feet[0].position.z=.04+sw*.08; walker.userData.feet[1].position.z=.04-sw*.08; }
   // 耶穌再來畫面（平和、溫暖）
   { const want=selected===60?1:0; RET.e+=(want-RET.e)*Math.min(1,dt*.7); const e=RET.e;
-    RET.j.position.y=1.3+Math.sin(t*.8)*.06; RET.rays.rotation.z=t*.04; RET.angels.rotation.y=t*.08;
+    RET.j.visible=e>.02; RET.j.scale.setScalar(1.35*Math.min(1,e*1.4)); RET.j.position.y=1.3+e*1.6+Math.sin(t*.8)*.08*e;
+    RET.halo.position.y=RET.j.position.y+1.4; RET.rays.position.y=RET.j.position.y+1.4;
+    walker.visible=e<.97; walker.scale.setScalar(1.0*(1-e)); RET.rays.rotation.z=t*.04; RET.angels.rotation.y=t*.08;
     RET.angels.children.forEach((a,i)=>{ const u=a.userData; a.position.set(Math.cos(u.ang)*u.r,u.h+Math.sin(t*.9+i)*.1,Math.sin(u.ang)*u.r); a.rotation.y=-u.ang-t*.08+Math.PI; });
     RET.cone.material.opacity=.04+e*.1; RET.halo.material.opacity=.18+e*.22; RET.rays.children.forEach(r=>r.material.opacity=.14+e*.2);
     RET.light.intensity=e*1.2;
