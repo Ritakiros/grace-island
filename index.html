@@ -610,6 +610,7 @@ const RET={}; {
   RET.rings=[0,1,2].map(i=>{ const r=new THREE.Mesh(new THREE.TorusGeometry(1,.06,6,48),goldBasic(0)); r.rotation.x=Math.PI/2; r.userData.off=i/3; g.add(r); return r; });
   g.userData.sid=60; pickables.push(g); RET.obj=g;
   RET.e=0; RET.d=0; g.visible=false;
+  RET.mats=[]; g.traverse(o=>{ if(o.material&&o.material.type==="MeshStandardMaterial"){ o.material=o.material.clone(); o.material.transparent=true; RET.mats.push(o.material); } });
 }
 STORY[61].isl=14;
 
@@ -989,27 +990,28 @@ function frame(){
       walker.position.lerpVectors(a,b,jT); walker.rotation.y=Math.atan2(b.x-a.x,b.z-a.z); } }
   { const ji=jVisit?ISL[STORY[jVisit].isl]:null; walker.position.y=TOP+(ji?ji.group.position.y:0)+(jWait>0?0:Math.abs(Math.sin(t*6))*.05);
     const sw=jWait>0?0:Math.sin(t*6); walker.userData.arms[0].rotation.x=sw*.5; walker.userData.arms[1].rotation.x=-sw*.5; walker.userData.feet[0].position.z=.04+sw*.08; walker.userData.feet[1].position.z=.04-sw*.08; }
-  // 耶穌再來畫面（平和、溫暖）
+  // 耶穌再來畫面：雲、天使、耶穌一起飄上 3 秒；之後耶穌降回島上，雲與天使淡出
   { const want=selected===60?1:0; RET.e+=(want-RET.e)*Math.min(1,dt*.7); const e=RET.e;
-    // 上升動畫只播 3 秒，結束後耶穌回到島上
-    // 雲、天使與耶穌一起用 3 秒降下；落定後耶穌回到島上
-    let jy=1.3+Math.sin(t*.8)*.05, js=0, hideW=0;
-    if(RET.asc!=null){ const el=(performance.now()-RET.asc)/1000, k=Math.min(1,el/3); RET.d=1-Math.pow(1-k,3);
-      js=1.35*(el<3?1:Math.max(0,1-(el-3)/.6)); hideW=el<3.6?1:0; if(el>=3.6) RET.asc=null; }
-    else RET.d+=((selected===60?1:0)-RET.d)*Math.min(1,dt*1.2);
-    RET.g.position.y=TOP+7.2+(1-RET.d)*14; RET.g.visible=RET.d>.01;
-    RET.j.visible=js>.01; RET.j.scale.setScalar(Math.max(js,.001)); RET.j.position.y=jy;
-    RET.halo.position.y=jy+1.4; RET.rays.position.y=jy+1.4;
-    RET.w=(RET.w??1)+((1-hideW)-(RET.w??1))*Math.min(1,dt*4); walker.visible=RET.w>.03; walker.scale.setScalar(Math.max(RET.w,.001)); RET.rays.rotation.z=t*.04; RET.angels.rotation.y=t*.08;
+    let op=0, gy=TOP+4, jOn=false;
+    if(RET.asc!=null){ const el=(performance.now()-RET.asc)/1000;
+      if(el<3){ const k=el/3, ek=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; gy=TOP+4+ek*6; op=Math.min(1,el/.4); jOn=true; walker.visible=false; RET.hand=null; }
+      else if(el<4.5){ const k=(el-3)/1.5, ek=1-Math.pow(1-k,3); gy=TOP+10; op=1-k;
+        if(!RET.hand){ RET.g.position.y=gy; RET.g.updateMatrixWorld(true); RET.hand=new THREE.Vector3(); RET.j.getWorldPosition(RET.hand); RET.land=jRoute[0].p.clone(); }
+        walker.visible=true; walker.scale.setScalar(1); walker.position.lerpVectors(RET.hand,RET.land,ek); walker.rotation.y=0; jWait=99; }
+      else { RET.asc=null; RET.hand=null; jSeg=0; jT=0; jWait=1.2; jVisit=60; walker.position.copy(jRoute[0].p); }
+    } else { walker.visible=true; walker.scale.setScalar(1); }
+    RET.g.visible=op>.01; RET.g.position.y=gy; RET.mats.forEach(m=>m.opacity=op);
+    RET.j.visible=jOn; RET.j.position.y=1.3+Math.sin(t*.8)*.05;
+    RET.rays.rotation.z=t*.04; RET.angels.rotation.y=t*.08;
     RET.angels.children.forEach((a,i)=>{ const u=a.userData; a.position.set(Math.cos(u.ang)*u.r,u.h+Math.sin(t*.9+i)*.1,Math.sin(u.ang)*u.r); a.rotation.y=-u.ang-t*.08+Math.PI; });
-    RET.cone.material.opacity=.04+e*.1; RET.halo.material.opacity=.18+e*.22; RET.rays.children.forEach(r=>r.material.opacity=.14+e*.2);
-    RET.light.intensity=e*1.2;
-    RET.rings.forEach(r=>{ const k=((t*.18)+r.userData.off)%1; r.scale.setScalar(1+k*5); r.material.opacity=e*(1-k)*.22; r.visible=e>.02; });
+    RET.cone.material.opacity=(.06+e*.1)*op; RET.halo.material.opacity=(.2+e*.22)*op; RET.rays.children.forEach(r=>r.material.opacity=(.16+e*.2)*op);
+    RET.light.intensity=(.4+e)*1.2*op;
+    RET.rings.forEach(r=>{ const k=((t*.18)+r.userData.off)%1; r.scale.setScalar(1+k*5); r.material.opacity=(1-k)*.22*op; r.visible=op>.02; });
     sun.intensity=baseSun*(1-.12*e); hemi.intensity=baseHemi*(1+.15*e); seaMat.color.copy(baseSea).lerp(new THREE.Color(0xf3dcb0),e*.22);
     starMat.opacity=baseStar;
     document.getElementById("skyFx").style.opacity=e*.7; labelsEl.style.opacity=1-e*.5;
     const cp=new THREE.Vector3(); RET.g.getWorldPosition(cp);
-    riseMat.opacity=e*.75; rise.forEach((m,i)=>{ m.visible=e>.02&&i%2===0; if(!m.visible) return; const u=m.userData; u.t=(u.t+dt*.06)%1; const k=u.t; m.position.set(u.sx+(cp.x-u.sx)*k*k, TOP+(cp.y-TOP)*k+Math.sin(t+i)*.1, u.sz+(cp.z-u.sz)*k*k); });
+    riseMat.opacity=.75*op; rise.forEach((m,i)=>{ m.visible=op>.02&&i%2===0; if(!m.visible) return; const u=m.userData; u.t=(u.t+dt*.12)%1; const k=u.t; m.position.set(u.sx+(cp.x-u.sx)*k*k, TOP+(cp.y-TOP)*k, u.sz+(cp.z-u.sz)*k*k); });
     falls.forEach(m=>m.visible=false);
   }
   // 鏡頭
