@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="恩典島：60 則兒童聖經故事蓋成的 3D 玩具小城，含和合本金句、注音、人物索引與聖經時間軸。">
 <title>恩典島</title>
+<meta name="author" content="@ritakao">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
@@ -679,7 +680,7 @@ function renderHome(){
     <div class="people">${PEOPLE.map((p,k)=>pchip(k)).join("")}</div>
     <h3>15 座島</h3>
     <div class="grid-isl">${ISL.map((s,i)=>`<button data-isl="${i}"><span>${esc(s.name)}</span><em>${s.ids.length} 則</em></button>`).join("")}</div>
-    <p class="foot">故事標題、經文出處與 PDF 來自 <a href="https://bibleforchildren.org/languages/chinese_traditional/stories.php" target="_blank" rel="noopener">兒童聖經故事 Bible for Children</a>（非商業用途免費）。島上摘要為本站改寫。</p>`;
+    <p class="foot">網站創作：<b>@ritakao</b><br>故事標題、經文出處與 PDF 來自 <a href="https://bibleforchildren.org/languages/chinese_traditional/stories.php" target="_blank" rel="noopener">兒童聖經故事 Bible for Children</a>（非商業用途免費）。島上摘要為本站改寫。</p>`;
 }
 function renderIsland(i){
   view={type:"isl",id:i};
