@@ -202,6 +202,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
 .pchip.nt .av{background:#bcd6ff}
 .pchip em{font-style:normal;font-weight:400;color:var(--ink-soft);font-size:11px;font-variant-numeric:tabular-nums}
 .dot.hit{box-shadow:0 0 0 3px #f4bd3c}
+.readbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.readbtn[aria-pressed="true"]{background:var(--sun);color:#2c2a3a}
+.rate button{padding:4px 10px;font-size:12.5px}
+.readmsg{font-size:12px;color:var(--ink-soft);flex-basis:100%}
+[data-say].reading{background:rgba(244,189,60,.32);border-radius:6px;box-shadow:0 0 0 4px rgba(244,189,60,.32);transition:background .2s}
 .scenes{display:grid;gap:10px}
 .panel h3.part{font-family:var(--display);font-size:18px;letter-spacing:.04em;color:var(--ink);padding-top:6px;border-top:1.5px dashed var(--ink-soft)}
 .panel.zy h3.part{font-size:20px;line-height:2.1}
@@ -287,6 +292,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
       <button class="btn" id="playBtn" aria-pressed="false">
         <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path id="playIcon" d="M7 4l13 8-13 8z" fill="currentColor"/></svg>
         <span id="playLabel">依年代播放</span>
+      </button>
+      <button class="btn" id="narrateBtn" aria-pressed="false" title="播放時把每則故事唸出來">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span>播放時朗讀</span>
       </button>
       <span class="tl-now" id="tlNow">點一個圓點，跳到那個年代的故事</span>
       <span class="tl-note">年代為傳統估算，部分年代學界看法不一</span>
@@ -750,6 +759,7 @@ const ICON={book:'<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="t
  scroll:'<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 9h6M9 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'};
 
 function renderHome(){
+  if(TTS.on) stopRead();
   view={type:"home"};
   const t=STORY[TODAY];
   panelBody.innerHTML=`
@@ -761,6 +771,7 @@ function renderHome(){
       <li><b>拖曳</b>旋轉島嶼，<b>滾輪／雙指</b>縮放，點一下建築就能讀故事。</li>
       <li><b>恩典線</b>把前後呼應的故事連起來，例如約拿的三天與耶穌的復活。</li>
       <li>每則故事都配一節<b>和合本金句</b>，搜尋也找得到經文裡的字。</li>
+      <li>故事頁按<b>唸故事</b>就會把故事唸出來；時間軸打開<b>播放時朗讀</b>，會一則唸完再換下一則。</li>
       <li>下方<b>時間軸</b>按年代排出 60 則故事，按「依年代播放」就會一站一站帶你走。</li>
       <li>時間軸最後一站是<b>耶穌再來與新天新地</b>。點開它，天空會亮起溫暖的光，天使環繞，地上的小光點慢慢升到雲裡。</li>
       <li>天空跟著台北的時間變化，夜裡家家點燈。<b>耶穌</b>和<b>小羊</b>會在島上走來走去，按「找耶穌」就能找到祂。</li>
@@ -772,6 +783,7 @@ function renderHome(){
     <p class="foot">網站創作：<b>@ritakao</b><br>發表於：<a href="https://islelive.com/" target="_blank" rel="noopener">島嶼上線 Isle Live</a>（islelive.com）<br>故事標題、經文出處與 PDF 來自 <a href="https://bibleforchildren.org/languages/chinese_traditional/stories.php" target="_blank" rel="noopener">兒童聖經故事 Bible for Children</a>（非商業用途免費）。島上摘要為本站改寫。</p>`;
 }
 function renderIsland(i){
+  if(TTS.on) stopRead();
   view={type:"isl",id:i};
   const s=ISL[i];
   panelBody.innerHTML=`
@@ -787,9 +799,10 @@ const SCENE_ICON=[
  '<svg viewBox="0 0 56 56" aria-hidden="true"><ellipse cx="28" cy="10" rx="8" ry="3" fill="none" stroke="#f4bd3c" stroke-width="3"/><circle cx="28" cy="20" r="5" fill="#f0d0ae" stroke="#2c2a3a" stroke-width="2"/><path d="M22 28h12l5 22H17z" fill="#fffaf0" stroke="#2c2a3a" stroke-width="2.5" stroke-linejoin="round"/><path d="M22 30C12 24 6 30 4 40c8-2 13-2 18-6M34 30c10-6 16 0 18 10-8-2-13-2-18-6" fill="#fff6dc" stroke="#2c2a3a" stroke-width="2.2" stroke-linejoin="round"/></svg>',
  '<svg viewBox="0 0 56 56" aria-hidden="true"><path d="M6 32l26-10v20z" fill="#f4bd3c" stroke="#2c2a3a" stroke-width="2.5" stroke-linejoin="round"/><rect x="2" y="28" width="6" height="8" rx="2" fill="#e9b949" stroke="#2c2a3a" stroke-width="2"/><path d="M38 22c4 3 4 17 0 20M44 16c7 6 7 26 0 32" fill="none" stroke="#2c2a3a" stroke-width="2.5" stroke-linecap="round"/><path d="M44 4l2 5M50 8l-4 3M8 6l3 4" stroke="#f4bd3c" stroke-width="2.5" stroke-linecap="round"/></svg>',
  '<svg viewBox="0 0 56 56" aria-hidden="true"><path d="M14 16a7 7 0 0 1 4-9 10 10 0 0 1 19 0 7 7 0 0 1 5 9z" fill="#fffaf0" stroke="#2c2a3a" stroke-width="2.5"/><g fill="#f4bd3c" stroke="#2c2a3a" stroke-width="2"><circle cx="16" cy="34" r="4"/><circle cx="28" cy="27" r="4"/><circle cx="40" cy="34" r="4"/></g><path d="M16 40v8M28 33v8M40 40v8" stroke="#2c2a3a" stroke-width="2.5" stroke-linecap="round"/><path d="M10 52h36" stroke="#4f9a5c" stroke-width="3" stroke-linecap="round"/><path d="M28 20v-2M16 28v-3M40 28v-3" stroke="#f4bd3c" stroke-width="2.5" stroke-linecap="round"/></svg>'];
-function verseHTML(s,id){ return `<figure class="verse"><blockquote>${Z(s.v[2],ZY.v[id])}</blockquote><figcaption><span>${esc(s.v[0])}・和合本</span><a href="${verseUrl(s)}" target="_blank" rel="noopener">看上下文</a><button class="copy" data-copy="${id}">複製金句</button></figcaption></figure>`; }
-function scenesHTML(){ return `<h3>四個畫面</h3><div class="scenes">${SCENES.map((c,i)=>`<div class="scene">${SCENE_ICON[i]}<div><b>${Z(c[0],ZY.sc[i][0])}</b><p>${Z(c[1],ZY.sc[i][1])}</p><blockquote>${Z(c[2][2],ZY.sc[i][2])}</blockquote><a href="https://www.biblegateway.com/passage/?search=${encodeURIComponent(c[2][1])}&version=CUV" target="_blank" rel="noopener">${esc(c[2][0])}・和合本</a></div></div>`).join("")}</div>`; }
+function verseHTML(s,id){ return `<figure class="verse"><blockquote data-say="${esc(s.v[2])}" data-pre="${esc("金句，"+sayRef(s.v[0]))}">${Z(s.v[2],ZY.v[id])}</blockquote><figcaption><span>${esc(s.v[0])}・和合本</span><a href="${verseUrl(s)}" target="_blank" rel="noopener">看上下文</a><button class="copy" data-copy="${id}">複製金句</button></figcaption></figure>`; }
+function scenesHTML(){ return `<h3>四個畫面</h3><div class="scenes">${SCENES.map((c,i)=>`<div class="scene">${SCENE_ICON[i]}<div><b data-say="${esc(c[0])}">${Z(c[0],ZY.sc[i][0])}</b><p data-say="${esc(c[1])}">${Z(c[1],ZY.sc[i][1])}</p><blockquote data-say="${esc(c[2][2])}" data-pre="${esc(sayRef(c[2][0]))}">${Z(c[2][2],ZY.sc[i][2])}</blockquote><a href="https://www.biblegateway.com/passage/?search=${encodeURIComponent(c[2][1])}&version=CUV" target="_blank" rel="noopener">${esc(c[2][0])}・和合本</a></div></div>`).join("")}</div>`; }
 function renderPeople(){
+  if(TTS.on) stopRead();
   view={type:"people"};
   panelBody.innerHTML=`
     <button class="back" data-home>← 全島地圖</button>
@@ -800,6 +813,7 @@ function renderPeople(){
     <h3>新約人物</h3><div class="people">${PEOPLE.slice(25).map((p,k)=>pchip(k+25)).join("")}</div>`;
 }
 function renderPerson(k){
+  if(TTS.on) stopRead();
   view={type:"person",id:k};
   const p=PEOPLE[k], ids=[...p[2]].sort((a,b)=>TL.indexOf(a)-TL.indexOf(b));
   const y0=STORY[ids[0]].yr, y1=STORY[ids[ids.length-1]].yr;
@@ -818,11 +832,16 @@ function renderStory(id){
   panelBody.innerHTML=`
     <button class="back" data-isl="${s.isl}">← ${esc(isl.name)}</button>
     <div class="eyebrow">${numTag(id)}<span class="pill ${isNT(id)?"nt":"ot"}">${isNT(id)?"新約":"舊約"}</span><span>${esc(s.yr)}</span>${id===TODAY?'<span class="pill">今日故事</span>':""}</div>
-    <h2>${Z(s.t,ZY.t[id])}</h2>
-    <p class="lede">${Z(s.sum,ZY.s[id])}</p>
-    ${id===60?`<h3 class="part">${Z("一、耶穌再來",ZY.h3[0])}</h3>`+verseHTML(STORY[61],61)+scenesHTML()+`<h3 class="part">${Z("二、新天新地",ZY.h3[1])}</h3><p class="lede">${Z("耶穌為我們預備地方；那裡不再有眼淚，神要與人同住。",ZY.ne)}</p>`:""}
+    <h2 data-say="${esc(s.t)}">${Z(s.t,ZY.t[id])}</h2>
+    <div class="readbar">
+      <button class="btn primary readbtn" data-read><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>唸故事</span></button>
+      <div class="seg rate" role="group" aria-label="朗讀速度"><button data-rate="0.75" aria-pressed="${TTS.rate<.9}">慢慢唸</button><button data-rate="1" aria-pressed="${TTS.rate>=.9}">正常</button></div>
+      <span class="readmsg" id="readMsg" hidden></span>
+    </div>
+    <p class="lede" data-say="${esc(s.sum)}">${Z(s.sum,ZY.s[id])}</p>
+    ${id===60?`<h3 class="part" data-say="一、耶穌再來">${Z("一、耶穌再來",ZY.h3[0])}</h3>`+verseHTML(STORY[61],61)+scenesHTML()+`<h3 class="part" data-say="二、新天新地">${Z("二、新天新地",ZY.h3[1])}</h3><p class="lede" data-say="耶穌為我們預備地方；那裡不再有眼淚，神要與人同住。">${Z("耶穌為我們預備地方；那裡不再有眼淚，神要與人同住。",ZY.ne)}</p>`:""}
     <figure class="verse">
-      <blockquote>${Z(s.v[2],ZY.v[id])}</blockquote>
+      <blockquote data-say="${esc(s.v[2])}" data-pre="${esc("金句，"+sayRef(s.v[0]))}">${Z(s.v[2],ZY.v[id])}</blockquote>
       <figcaption><span>${esc(s.v[0])}・和合本</span><a href="${verseUrl(s)}" target="_blank" rel="noopener">看上下文</a><button class="copy" data-copy="${id}">複製金句</button></figcaption>
     </figure>
     <div class="eyebrow"><span>故事經文段落：${esc(s.ref)}</span></div>
@@ -848,7 +867,7 @@ panel.addEventListener("click",e=>{
 const zyBtn=document.getElementById("zyBtn");
 function applyZy(){ zyBtn.setAttribute("aria-pressed",zyOn); panel.classList.toggle("zy",zyOn); }
 function rerender(){ const v=view; if(v.type==="home") renderHome(); else if(v.type==="isl") renderIsland(v.id); else if(v.type==="story") renderStory(v.id); else if(v.type==="people") renderPeople(); else if(v.type==="person") renderPerson(v.id); }
-zyBtn.addEventListener("click",()=>{ zyOn=!zyOn; try{ localStorage.setItem("grace-zy",zyOn?"1":"0"); }catch(e){} applyZy(); const st=panelBody.scrollTop; rerender(); panelBody.scrollTop=st; });
+zyBtn.addEventListener("click",()=>{ zyOn=!zyOn; try{ localStorage.setItem("grace-zy",zyOn?"1":"0"); }catch(e){} applyZy(); if(TTS.on) stopRead(); const st=panelBody.scrollTop; rerender(); panelBody.scrollTop=st; });
 applyZy();
 document.getElementById("peopleBtn").addEventListener("click",showPeople);
 let personSel=null;
@@ -863,7 +882,7 @@ function selectPerson(k){ stopPlay(); qEl.value=""; resEl.hidden=true; personSel
 document.getElementById("handle").addEventListener("click",()=>panel.classList.toggle("collapsed"));
 
 let selected=null;
-function setSelected(id){ selected=id; syncTimeline(id); if(id){ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); ringMark.position.set(w.x,w.y+.08,w.z); ringMark.visible=true; } else ringMark.visible=false; }
+function setSelected(id){ if(TTS.on) stopRead(); selected=id; syncTimeline(id); if(id){ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); ringMark.position.set(w.x,w.y+.08,w.z); ringMark.visible=true; } else ringMark.visible=false; }
 function selectStory(id,fly=true){ if(id===61) id=60; if(id===60) RET.asc=performance.now(); setSelected(id); renderStory(id); panelBody.scrollTop=0; panel.classList.remove("collapsed"); if(fly){ const w=new THREE.Vector3(); storyObj[id].getWorldPosition(w); if(id===60) w.y+=3; flyTo(w,id===60?34:20); } }
 function selectIsland(i){ setSelected(null); renderIsland(i); panelBody.scrollTop=0; panel.classList.remove("collapsed"); flyTo(ISL[i].base.clone(),28); }
 function goHome(){ setSelected(null); renderHome(); panelBody.scrollTop=0; flyTo(HOME.clone(),innerWidth<760?102:68); }
@@ -880,6 +899,38 @@ const labelsEl=document.getElementById("labels");
 ISL.forEach((s,i)=>{ const b=document.createElement("button"); b.className="isl"+(s.home?" home":""); b.innerHTML=`<span class="dot" style="background:${s.home?"#fff":s.top}"></span>${esc(s.name)} <small>${s.ids.length}</small>`; b.setAttribute("aria-label",`${s.name}，${s.ids.length} 則故事`);
   b.addEventListener("click",()=>selectIsland(i)); labelsEl.appendChild(b); s.label=b; });
 
+/* 朗讀 */
+const BOOKS={"創":"創世記","出":"出埃及記","書":"約書亞記","士":"士師記","得":"路得記","撒上":"撒母耳記上","撒下":"撒母耳記下","王上":"列王紀上","王下":"列王紀下","代下":"歷代志下","尼":"尼希米記","斯":"以斯帖記","賽":"以賽亞書","耶":"耶利米書","結":"以西結書","但":"但以理書","拿":"約拿書","太":"馬太福音","可":"馬可福音","路":"路加福音","約":"約翰福音","徒":"使徒行傳","提後":"提摩太後書","帖前":"帖撒羅尼迦前書","啟":"啟示錄"};
+function zhNum(n){ const d="零一二三四五六七八九"; if(n<10) return d[n]; if(n<20) return "十"+(n%10?d[n%10]:""); if(n<100) return d[Math.floor(n/10)]+"十"+(n%10?d[n%10]:""); const r=n%100; return d[Math.floor(n/100)]+"百"+(r===0?"":r<10?"零"+d[r]:(r<20?"一":"")+zhNum(r)); }
+function sayRef(r){ const m=String(r).match(/^(\S+)\s+(\d+):(\d+)(?:–(\d+))?$/); if(!m) return r; return `${BOOKS[m[1]]||m[1]}，第${zhNum(+m[2])}章，第${zhNum(+m[3])}${m[4]?"到"+zhNum(+m[4]):""}節`; }
+const TTS={on:false,rate:1,voice:null,q:[],i:0,cur:null,onDone:null};
+try{ const r=parseFloat(localStorage.getItem("grace-rate")); if(r) TTS.rate=r; }catch(e){}
+const canSpeak="speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+function pickVoice(){ const vs=speechSynthesis.getVoices(); return vs.find(v=>/zh[-_]TW/i.test(v.lang))||vs.find(v=>/zh[-_]HK/i.test(v.lang))||vs.find(v=>/^zh/i.test(v.lang))||vs.find(v=>/^cmn/i.test(v.lang))||null; }
+if(canSpeak){ TTS.voice=pickVoice(); speechSynthesis.addEventListener?.("voiceschanged",()=>{ TTS.voice=pickVoice(); }); }
+function readMsg(t){ const m=document.getElementById("readMsg"); if(m){ m.textContent=t; m.hidden=!t; } }
+function syncReadBtn(){ const b=panelBody.querySelector("[data-read]"); if(!b) return; b.setAttribute("aria-pressed",TTS.on); b.querySelector("span").textContent=TTS.on?"停止朗讀":"唸故事"; }
+function buildQueue(){ const q=[]; panelBody.querySelectorAll("[data-say]").forEach(el=>{ if(el.dataset.pre) q.push({el,text:el.dataset.pre});
+  (el.dataset.say.match(/[^。！？；]+[。！？；」』]*/g)||[el.dataset.say]).forEach(t=>{ t=t.replace(/[「」『』─]/g," ").trim(); if(t) q.push({el,text:t}); }); }); return q; }
+function speakNext(){ if(!TTS.on) return; panelBody.querySelectorAll(".reading").forEach(e=>e.classList.remove("reading"));
+  if(TTS.i>=TTS.q.length){ stopRead(true); return; }
+  const it=TTS.q[TTS.i++]; if(!it.el.isConnected){ stopRead(); return; }
+  it.el.classList.add("reading"); it.el.scrollIntoView({block:"nearest",behavior:reduce?"auto":"smooth"});
+  const u=new SpeechSynthesisUtterance(it.text); u.lang=TTS.voice?TTS.voice.lang:"zh-TW"; if(TTS.voice) u.voice=TTS.voice; u.rate=TTS.rate; u.pitch=1.05;
+  u.onend=()=>{ if(TTS.cur===u) setTimeout(speakNext,220); }; u.onerror=()=>{ if(TTS.cur===u) setTimeout(speakNext,50); };
+  TTS.cur=u; speechSynthesis.speak(u); }
+function startRead(){ if(!canSpeak){ readMsg("這個瀏覽器不支援朗讀，請改用 Chrome、Safari 或 Edge。"); return false; }
+  speechSynthesis.cancel(); TTS.q=buildQueue(); TTS.i=0; TTS.on=true; syncReadBtn();
+  if(!TTS.voice) TTS.voice=pickVoice(); readMsg(TTS.voice?"":"找不到中文語音，可能會用其他語音唸。可在系統設定加入「中文（台灣）」語音。");
+  speakNext(); return true; }
+function stopRead(finished){ const was=TTS.on; TTS.on=false; TTS.cur=null; try{ if(canSpeak) speechSynthesis.cancel(); }catch(e){}
+  panelBody.querySelectorAll(".reading").forEach(e=>e.classList.remove("reading")); syncReadBtn();
+  const f=TTS.onDone; TTS.onDone=null; if(finished&&was&&f) f(); }
+panel.addEventListener("click",e=>{ const rb=e.target.closest("[data-read]"); if(rb){ if(TTS.on) stopRead(); else startRead(); return; }
+  const rt=e.target.closest("[data-rate]"); if(rt){ TTS.rate=+rt.dataset.rate; try{ localStorage.setItem("grace-rate",TTS.rate); }catch(err){}
+    rt.parentElement.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b===rt)); if(TTS.on){ TTS.i=Math.max(0,TTS.i-1); speechSynthesis.cancel(); TTS.cur=null; speakNext(); } } });
+let narrate=false; try{ narrate=localStorage.getItem("grace-narrate")==="1"; }catch(e){}
+
 /* 時間軸 */
 const tlTrack=document.getElementById("tlTrack"), tlScroll=document.getElementById("tlScroll"), tlNow=document.getElementById("tlNow");
 const dots={};
@@ -895,12 +946,19 @@ function syncTimeline(id){ Object.values(dots).forEach(d=>d.classList.remove("on
   tlNow.innerHTML=`<b>${esc(s.yr)}</b>・${esc(era[0])}・${esc(s.t)}`;
   const L=d.offsetLeft-tlScroll.clientWidth/2; if(tlScroll.scrollWidth>tlScroll.clientWidth) tlScroll.scrollTo({left:L,behavior:reduce?"auto":"smooth"}); }
 let playTimer=null; const playBtn=document.getElementById("playBtn"), playLabel=document.getElementById("playLabel"), playIcon=document.getElementById("playIcon");
-function stopPlay(){ if(!playTimer) return; clearInterval(playTimer); playTimer=null; playBtn.classList.remove("playing"); playBtn.setAttribute("aria-pressed","false"); playLabel.textContent="依年代播放"; playIcon.setAttribute("d","M7 4l13 8-13 8z"); }
+let playing=false;
+function stopPlay(){ if(!playing) return; playing=false; clearTimeout(playTimer); playTimer=null; if(TTS.on) stopRead(); playBtn.classList.remove("playing"); playBtn.setAttribute("aria-pressed","false"); playLabel.textContent="依年代播放"; playIcon.setAttribute("d","M7 4l13 8-13 8z"); }
 let playList=TL;
-function step(){ const i=selected?playList.indexOf(selected):-1; if(i>=playList.length-1){ stopPlay(); return; } selectStory(playList[i+1]); }
+function step(){ if(!playing) return; const i=selected?playList.indexOf(selected):-1; if(i>=playList.length-1){ stopPlay(); return; } selectStory(playList[i+1]);
+  if(narrate&&canSpeak){ TTS.onDone=()=>{ if(playing) playTimer=setTimeout(step,1400); }; setTimeout(()=>{ if(playing){ const d=TTS.onDone; startRead(); TTS.onDone=d; } },60); } else playTimer=setTimeout(step,4200); }
 function startPlay(list){ stopPlay(); playList=list?[...list].sort((a,b)=>TL.indexOf(a)-TL.indexOf(b)):TL; playBtn.classList.add("playing"); playBtn.setAttribute("aria-pressed","true"); playLabel.textContent="暫停"; playIcon.setAttribute("d","M6 4h4v16H6zM14 4h4v16h-4z");
-  if(!playList.includes(selected)||selected===playList[playList.length-1]) setSelected(null); step(); playTimer=setInterval(step,4200); }
-playBtn.addEventListener("click",()=>{ if(playTimer){ stopPlay(); return; } startPlay(personSel!==null?PEOPLE[personSel][2]:null); });
+  if(!playList.includes(selected)||selected===playList[playList.length-1]) setSelected(null); playing=true; step(); }
+const narrateBtn=document.getElementById("narrateBtn");
+function syncNarrate(){ narrateBtn.setAttribute("aria-pressed",narrate); narrateBtn.classList.toggle("playing",narrate); }
+syncNarrate(); if(!canSpeak) narrateBtn.hidden=true;
+narrateBtn.addEventListener("click",()=>{ narrate=!narrate; try{ localStorage.setItem("grace-narrate",narrate?"1":"0"); }catch(e){} syncNarrate();
+  if(playing){ clearTimeout(playTimer); if(narrate){ TTS.onDone=()=>{ if(playing) playTimer=setTimeout(step,1400); }; const d=TTS.onDone; startRead(); TTS.onDone=d; } else { if(TTS.on) stopRead(); playTimer=setTimeout(step,3000); } } });
+playBtn.addEventListener("click",()=>{ if(playing){ stopPlay(); return; } startPlay(personSel!==null?PEOPLE[personSel][2]:null); });
 
 /* 篩選 */
 let filter="all";
