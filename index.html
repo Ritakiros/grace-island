@@ -245,6 +245,55 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
   .isl{font-size:12px;padding:4px 8px 4px 6px}
   .isl small{display:none}
 }
+
+/* 小遊戲 */
+.game{position:fixed;inset:0;z-index:20;display:flex;justify-content:center;align-items:stretch;background:rgba(30,28,44,.45);
+  padding-top:max(12px, env(safe-area-inset-top, 0px));padding-bottom:max(12px, env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.game-card{width:100%;max-width:1040px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.game-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:2px solid var(--edge)}
+.game-head h2{margin:0;font-family:var(--display);font-size:22px;letter-spacing:.06em;margin-right:auto}
+.game-body{flex:1;min-height:0;overflow:auto;padding:14px}
+.gwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:16px;align-items:start}
+.gside{display:grid;gap:12px;align-content:start}
+.gside h3{margin:0;font-size:12px;letter-spacing:.12em;color:var(--ink-soft)}
+.gtask{margin:0;font-family:var(--display);font-size:20px;line-height:1.6}
+.gtask small{display:block;font-family:var(--body);font-size:13px;color:var(--ink-soft);line-height:1.6}
+.glevels{display:grid;gap:6px}
+.glv{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--chip);font-weight:700;font-size:14px}
+.glv:hover,.glv:focus-visible{outline:2px solid var(--edge)}
+.glv[aria-pressed="true"]{background:var(--sun);color:#2c2a3a}
+.glv .lvn{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;border:2px solid var(--edge);background:var(--card);color:var(--ink);font-family:var(--display);flex:none}
+.glv em{margin-left:auto;font-style:normal;font-size:12px;color:var(--ink-soft)}
+.glv[aria-pressed="true"] em{color:#5a4a20}
+.gstage{position:relative;display:grid;place-items:center;min-width:0}
+#mazeCv{display:block;max-width:100%;border-radius:14px;border:2px solid var(--edge);box-shadow:3px 4px 0 var(--edge);touch-action:none;background:var(--card)}
+.gwin{position:absolute;inset:auto 12px 12px 12px;padding:16px;display:grid;gap:10px;text-align:left}
+.gwin h3{margin:0;font-family:var(--display);font-size:24px;color:var(--ink);letter-spacing:.04em}
+.gwin blockquote{margin:0;font-family:var(--display);font-size:17px;line-height:1.75}
+.gwin .src{font-size:12.5px;color:var(--ink-soft)}
+.dpad{display:none;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,52px);gap:6px;justify-content:center;margin-top:12px}
+.dpad button{all:unset;cursor:pointer;display:grid;place-items:center;border-radius:12px;border:2px solid var(--edge);background:var(--card);box-shadow:2px 3px 0 var(--edge);color:var(--ink)}
+.dpad button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.dpad [data-d="up"]{grid-column:2;grid-row:1}.dpad [data-d="left"]{grid-column:1;grid-row:2}.dpad [data-d="down"]{grid-column:2;grid-row:2}.dpad [data-d="right"]{grid-column:3;grid-row:2}
+.ghint{margin:0;font-size:12.5px;color:var(--ink-soft)}
+.gstat{display:flex;gap:14px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.gstat b{color:var(--ink)}
+.cstage{min-width:0;display:grid;place-items:center}
+.cstage svg{width:100%;max-width:680px;height:auto;border-radius:14px;border:2px solid var(--edge);box-shadow:3px 4px 0 var(--edge);background:#fff;touch-action:manipulation}
+.cstage .cr{cursor:pointer;transition:fill .15s}
+.cstage .cr:hover{filter:brightness(.94)}
+.palette{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.sw{all:unset;cursor:pointer;aspect-ratio:1;border-radius:50%;border:2px solid var(--edge);box-shadow:1px 2px 0 var(--edge)}
+.sw[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:2px}
+.sw.eraser{background:repeating-linear-gradient(45deg,#fff 0 5px,#e7e3da 5px 10px)}
+.cverse{margin:0;font-family:var(--display);font-size:15px;line-height:1.75;padding:10px 12px;border-radius:12px;background:var(--chip)}
+.cverse small{display:block;font-family:var(--body);font-size:12px;color:var(--ink-soft)}
+.game.zy .gtask{font-size:22px;line-height:2.2}
+.game.zy .gwin blockquote,.game.zy .cverse{font-size:19px;line-height:2.25}
+@media (hover:none),(max-width:760px){ .dpad{display:grid} }
+@media (max-width:760px){ .gwrap{grid-template-columns:minmax(0,1fr)} .gside{order:-1;gap:8px} .ghint,.gside h3,#gMaze .gstat{display:none} .gtask{font-size:17px} .game-body{padding:10px} .game-head{padding:10px} .game-head .btn{padding:6px 10px} .glevels{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto;padding-bottom:4px} .palette{grid-template-columns:repeat(8,minmax(0,1fr))} .game-head h2{font-size:19px} }
+
 @media (prefers-reduced-motion: reduce){ .item,.isl{transition:none} }
 </style>
 </head>
@@ -280,6 +329,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
   <aside class="panel block" id="panel" aria-live="polite">
     <button class="handle" id="handle" aria-label="展開或收合故事面板"></button>
     <div class="ptools">
+      <button class="btn" id="gameBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="5.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M7.5 10.5v4M5.5 12.5h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="15.5" cy="11.5" r="1.3" fill="currentColor"/><circle cx="18" cy="14" r="1.3" fill="currentColor"/></svg>
+        小遊戲
+      </button>
       <button class="btn" id="peopleBtn">人物</button>
       <button class="btn" id="zyBtn" aria-pressed="false" aria-label="顯示注音">ㄅㄆㄇ 注音</button>
     </div>
@@ -328,6 +381,58 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14p
       <button class="btn" id="nowBtn" hidden>回到現在</button>
     </div>
     <span class="lambnote" id="lambNote">小羊正在島上散步…</span>
+  </div>
+</div>
+
+<div class="game" id="game" hidden role="dialog" aria-modal="true" aria-labelledby="gameTitle">
+  <div class="game-card block">
+    <header class="game-head">
+      <h2 id="gameTitle">小遊戲</h2>
+      <div class="seg" role="group" aria-label="選擇遊戲">
+        <button data-gtab="maze" aria-pressed="true">聖經迷宮</button>
+        <button data-gtab="color" aria-pressed="false">塗色本</button>
+      </div>
+      <button class="btn" id="gameZy" aria-pressed="false">ㄅㄆㄇ 注音</button>
+      <button class="btn" id="gameClose" aria-label="關閉小遊戲，回到島上">回到島上</button>
+    </header>
+    <div class="game-body">
+      <section id="gMaze" class="gwrap">
+        <div class="gstage">
+          <canvas id="mazeCv" width="560" height="560" aria-label="迷宮"></canvas>
+          <div class="gwin block" id="gWin" hidden></div>
+          <div class="dpad" aria-label="方向鍵">
+            <button data-d="up" aria-label="上"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 5l7 9H5z" fill="currentColor"/></svg></button>
+            <button data-d="left" aria-label="左"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 12l9-7v14z" fill="currentColor"/></svg></button>
+            <button data-d="down" aria-label="下"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 19l7-9H5z" fill="currentColor"/></svg></button>
+            <button data-d="right" aria-label="右"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M19 12l-9-7v14z" fill="currentColor"/></svg></button>
+          </div>
+        </div>
+        <div class="gside">
+          <p class="gtask" id="gTask"></p>
+          <div class="gstat"><span>步數 <b id="gSteps">0</b></span><span>已完成 <b id="gDone">0</b> / 5 關</span></div>
+          <p class="ghint">用方向鍵或 WASD 走；手機上用手指從角色拖著走，或按下方的方向鍵。</p>
+          <div class="actions"><button class="btn" id="gNew">換一個迷宮</button></div>
+          <h3>關卡</h3>
+          <div class="glevels" id="gLevels"></div>
+        </div>
+      </section>
+      <section id="gColor" class="gwrap" hidden>
+        <div class="cstage" id="cStage"></div>
+        <div class="gside">
+          <p class="cverse" id="cVerse"></p>
+          <h3>選顏色</h3>
+          <div class="palette" id="cPal"></div>
+          <div class="actions">
+            <button class="btn" id="cUndo">復原一步</button>
+            <button class="btn" id="cClear">全部清除</button>
+            <button class="btn" id="cSave" hidden>存成圖片</button>
+          </div>
+          <p class="ghint" id="cMsg">點一下圖裡的區塊，就會塗上選好的顏色。</p>
+          <h3>選圖畫</h3>
+          <div class="glevels" id="cPics"></div>
+        </div>
+      </section>
+    </div>
   </div>
 </div>
 
@@ -771,6 +876,7 @@ function renderHome(){
       <li><b>拖曳</b>旋轉島嶼，<b>滾輪／雙指</b>縮放，點一下建築就能讀故事。</li>
       <li><b>恩典線</b>把前後呼應的故事連起來，例如約拿的三天與耶穌的復活。</li>
       <li>每則故事都配一節<b>和合本金句</b>，搜尋也找得到經文裡的字。</li>
+      <li>右上角<b>小遊戲</b>有聖經迷宮和塗色本，走完迷宮會出現那則故事的金句。</li>
       <li>故事頁按<b>唸故事</b>就會把故事唸出來；時間軸打開<b>播放時朗讀</b>，會一則唸完再換下一則。</li>
       <li>下方<b>時間軸</b>按年代排出 60 則故事，按「依年代播放」就會一站一站帶你走。</li>
       <li>時間軸最後一站是<b>耶穌再來與新天新地</b>。點開它，天空會亮起溫暖的光，天使環繞，地上的小光點慢慢升到雲裡。</li>
@@ -900,7 +1006,7 @@ ISL.forEach((s,i)=>{ const b=document.createElement("button"); b.className="isl"
   b.addEventListener("click",()=>selectIsland(i)); labelsEl.appendChild(b); s.label=b; });
 
 /* 朗讀 */
-const BOOKS={"創":"創世記","出":"出埃及記","書":"約書亞記","士":"士師記","得":"路得記","撒上":"撒母耳記上","撒下":"撒母耳記下","王上":"列王紀上","王下":"列王紀下","代下":"歷代志下","尼":"尼希米記","斯":"以斯帖記","賽":"以賽亞書","耶":"耶利米書","結":"以西結書","但":"但以理書","拿":"約拿書","太":"馬太福音","可":"馬可福音","路":"路加福音","約":"約翰福音","徒":"使徒行傳","提後":"提摩太後書","帖前":"帖撒羅尼迦前書","啟":"啟示錄"};
+const BOOKS={"詩":"詩篇","創":"創世記","出":"出埃及記","書":"約書亞記","士":"士師記","得":"路得記","撒上":"撒母耳記上","撒下":"撒母耳記下","王上":"列王紀上","王下":"列王紀下","代下":"歷代志下","尼":"尼希米記","斯":"以斯帖記","賽":"以賽亞書","耶":"耶利米書","結":"以西結書","但":"但以理書","拿":"約拿書","太":"馬太福音","可":"馬可福音","路":"路加福音","約":"約翰福音","徒":"使徒行傳","提後":"提摩太後書","帖前":"帖撒羅尼迦前書","啟":"啟示錄"};
 function zhNum(n){ const d="零一二三四五六七八九"; if(n<10) return d[n]; if(n<20) return "十"+(n%10?d[n%10]:""); if(n<100) return d[Math.floor(n/10)]+"十"+(n%10?d[n%10]:""); const r=n%100; return d[Math.floor(n/100)]+"百"+(r===0?"":r<10?"零"+d[r]:(r<20?"一":"")+zhNum(r)); }
 function sayRef(r){ const m=String(r).match(/^(\S+)\s+(\d+):(\d+)(?:–(\d+))?$/); if(!m) return r; return `${BOOKS[m[1]]||m[1]}，第${zhNum(+m[2])}章，第${zhNum(+m[3])}${m[4]?"到"+zhNum(+m[4]):""}節`; }
 const TTS={on:false,rate:1,voice:null,q:[],i:0,cur:null,onDone:null};
@@ -1025,6 +1131,7 @@ controls.target.copy(HOME);
 /* ---------------- 動畫迴圈 ---------------- */
 const clock=new THREE.Clock(); const tmp=new THREE.Vector3();
 function frame(){
+  if(GAME.open){ clock.getDelta(); requestAnimationFrame(frame); return; }
   const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
   // 海浪
   const arr=seaPos.array; for(let i=0;i<arr.length;i+=3){ const x=seaBase[i], z=seaBase[i+2]; arr[i+1]=reduce?0:Math.sin(x*.18+t*.9)*.12+Math.cos(z*.22+t*.7)*.1; } seaPos.needsUpdate=true;
@@ -1091,6 +1198,186 @@ function frame(){
     if(vis) s.label.style.transform=`translate(${(tmp.x*.5+.5)*W}px,${(-tmp.y*.5+.5)*H}px) translate(-50%,-100%)`; });
   requestAnimationFrame(frame);
 }
+
+
+/* ---------------- 小遊戲 ---------------- */
+const GAMEDATA={"MAZES":[{"name":"迷途的小羊","task":"幫小羊找到回家的路，回到好牧人身邊。","story":45,"n":7,"player":"sheep","goal":"shepherd","wall":"#5f8a4a","floor":"#eef6d8","ref":"路 15:6","q":"Luke 15:6","v":"就請朋友鄰舍來，對他們說：『我失去的羊已經找著了，你們和我一同歡喜吧！』"},{"name":"動物進方舟","task":"帶小獅子穿過草原，趕快進到方舟裡。","story":3,"n":9,"player":"lion","goal":"ark","wall":"#8a6a45","floor":"#f6ecd2","ref":"創 7:9","q":"Gen 7:9","v":"都是一對一對地，有公有母，到挪亞那裡進入方舟，正如神所吩咐挪亞的。"},{"name":"走過紅海","task":"海水分開了！沿著乾地走到對岸。","story":11,"n":10,"player":"walker","goal":"land","wall":"#3d8fc4","floor":"#f3e2b0","ref":"出 14:22","q":"Exod 14:22","v":"以色列人下海中走乾地，水在他們的左右作了牆垣。"},{"name":"跟著星星走","task":"博士跟著星星，去找剛出生的耶穌。","story":36,"n":11,"player":"magi","goal":"manger","wall":"#4b4f8f","floor":"#e8e6f6","ref":"太 2:10","q":"Matt 2:10","v":"他們看見那星，就大大地歡喜。"},{"name":"撒該找耶穌","task":"撒該個子矮小，幫他穿過人群，爬上桑樹看耶穌。","story":53,"n":12,"player":"zac","goal":"tree","wall":"#a05a3c","floor":"#fbeede","ref":"路 19:5","q":"Luke 19:5","v":"耶穌到了那裡，抬頭一看，對他說：「撒該，快下來！今天我必住在你家裡。」"}],"PICS":[{"name":"挪亞方舟","story":3,"ref":"創 9:13","q":"Gen 9:13","v":"我把虹放在雲彩中，這就可作我與地立約的記號了。"},{"name":"馬槽裡的耶穌","story":36,"ref":"路 2:11","q":"Luke 2:11","v":"因今天在大衛的城裡，為你們生了救主，就是主基督。"},{"name":"約拿與大魚","story":26,"ref":"拿 2:10","q":"Jonah 2:10","v":"耶和華吩咐魚，魚就把約拿吐在旱地上。"},{"name":"牧羊的大衛","story":19,"ref":"詩 23:1","q":"Ps 23:1","v":"耶和華是我的牧者，我必不致缺乏。"}],"GZ":{"mz":[[["ㄇㄧˊ","ㄊㄨˊ","˙ㄉㄜ","ㄒㄧㄠˇ","ㄧㄤˊ"],["ㄅㄤ","ㄒㄧㄠˇ","ㄧㄤˊ","ㄓㄠˇ","ㄉㄠˋ","ㄏㄨㄟˊ","ㄐㄧㄚ","˙ㄉㄜ","ㄌㄨˋ","","ㄏㄨㄟˊ","ㄉㄠˋ","ㄏㄠˇ","ㄇㄨˋ","ㄖㄣˊ","ㄕㄣ","ㄅㄧㄢ",""],["ㄐㄧㄡˋ","ㄑㄧㄥˇ","ㄆㄥˊ","ㄧㄡˇ","ㄌㄧㄣˊ","ㄕㄜˇ","ㄌㄞˊ","","ㄉㄨㄟˋ","ㄊㄚ","˙ㄇㄣ","ㄕㄨㄛ","","","ㄨㄛˇ","ㄕ","ㄑㄩˋ","˙ㄉㄜ","ㄧㄤˊ","ㄧˇ","ㄐㄧㄥ","ㄓㄠˇ","˙ㄓㄜ","˙ㄌㄜ","","ㄋㄧˇ","˙ㄇㄣ","ㄏㄜˊ","ㄨㄛˇ","ㄧ","ㄊㄨㄥˊ","ㄏㄨㄢ","ㄒㄧˇ","˙ㄅㄚ","",""]],[["ㄉㄨㄥˋ","ㄨˋ","ㄐㄧㄣˋ","ㄈㄤ","ㄓㄡ"],["ㄉㄞˋ","ㄒㄧㄠˇ","ㄕ","˙ㄗ","ㄔㄨㄢ","ㄍㄨㄛˋ","ㄘㄠˇ","ㄩㄢˊ","","ㄍㄢˇ","ㄎㄨㄞˋ","ㄐㄧㄣˋ","ㄉㄠˋ","ㄈㄤ","ㄓㄡ","ㄌㄧˇ",""],["ㄉㄡ","ㄕˋ","ㄧ","ㄉㄨㄟˋ","ㄧ","ㄉㄨㄟˋ","ㄉㄧˋ","","ㄧㄡˇ","ㄍㄨㄥ","ㄧㄡˇ","ㄇㄨˇ","","ㄉㄠˋ","ㄋㄨㄛˊ","ㄧㄚˋ","ㄋㄚˋ","ㄌㄧˇ","ㄐㄧㄣˋ","ㄖㄨˋ","ㄈㄤ","ㄓㄡ","","ㄓㄥˋ","ㄖㄨˊ","ㄕㄣˊ","ㄙㄨㄛˇ","ㄈㄣ","ㄈㄨˋ","ㄋㄨㄛˊ","ㄧㄚˋ","˙ㄉㄜ",""]],[["ㄗㄡˇ","ㄍㄨㄛˋ","ㄏㄨㄥˊ","ㄏㄞˇ"],["ㄏㄞˇ","ㄕㄨㄟˇ","ㄈㄣˋ","ㄎㄞ","˙ㄌㄜ","","ㄧㄢˊ","˙ㄓㄜ","ㄍㄢ","ㄉㄧˋ","ㄗㄡˇ","ㄉㄠˋ","ㄉㄨㄟˋ","ㄢˋ",""],["ㄧˇ","ㄙㄜˋ","ㄌㄧㄝˋ","ㄖㄣˊ","ㄒㄧㄚˋ","ㄏㄞˇ","ㄓㄨㄥ","ㄗㄡˇ","ㄍㄢ","ㄉㄧˋ","","ㄕㄨㄟˇ","ㄗㄞˋ","ㄊㄚ","˙ㄇㄣ","˙ㄉㄜ","ㄗㄨㄛˇ","ㄧㄡˋ","ㄗㄨㄛˋ","˙ㄌㄜ","ㄑㄧㄤˊ","ㄩㄢˊ",""]],[["ㄍㄣ","˙ㄓㄜ","ㄒㄧㄥ","ㄒㄧㄥ","ㄗㄡˇ"],["ㄅㄛˊ","ㄕˋ","ㄍㄣ","˙ㄓㄜ","ㄒㄧㄥ","ㄒㄧㄥ","","ㄑㄩˋ","ㄓㄠˇ","ㄍㄤ","ㄔㄨ","ㄕㄥ","˙ㄉㄜ","ㄧㄝˊ","ㄙㄨ",""],["ㄊㄚ","˙ㄇㄣ","ㄎㄢˋ","ㄐㄧㄢˋ","ㄋㄚˋ","ㄒㄧㄥ","","ㄐㄧㄡˋ","ㄉㄚˋ","ㄉㄚˋ","˙ㄉㄜ","ㄏㄨㄢ","ㄒㄧˇ",""]],[["ㄙㄚ","ㄍㄞ","ㄓㄠˇ","ㄧㄝˊ","ㄙㄨ"],["ㄙㄚ","ㄍㄞ","ㄍㄜˋ","˙ㄗ","ㄞˇ","ㄒㄧㄠˇ","","ㄅㄤ","ㄊㄚ","ㄔㄨㄢ","ㄍㄨㄛˋ","ㄖㄣˊ","ㄑㄩㄣˊ","","ㄆㄚˊ","ㄕㄤˋ","ㄙㄤ","ㄕㄨˋ","ㄎㄢˋ","ㄧㄝˊ","ㄙㄨ",""],["ㄧㄝˊ","ㄙㄨ","ㄉㄠˋ","˙ㄌㄜ","ㄋㄚˋ","ㄌㄧˇ","","ㄊㄞˊ","ㄊㄡˊ","ㄧ","ㄎㄢˋ","","ㄉㄨㄟˋ","ㄊㄚ","ㄕㄨㄛ","","","ㄙㄚ","ㄍㄞ","","ㄎㄨㄞˋ","ㄒㄧㄚˋ","ㄌㄞˊ","","ㄐㄧㄣ","ㄊㄧㄢ","ㄨㄛˇ","ㄅㄧˋ","ㄓㄨˋ","ㄗㄞˋ","ㄋㄧˇ","ㄐㄧㄚ","ㄌㄧˇ","",""]]],"cp":[[["ㄋㄨㄛˊ","ㄧㄚˋ","ㄈㄤ","ㄓㄡ"],["ㄨㄛˇ","ㄅㄚˇ","ㄏㄨㄥˊ","ㄈㄤˋ","ㄗㄞˋ","ㄩㄣˊ","ㄘㄞˇ","ㄓㄨㄥ","","ㄓㄜˋ","ㄐㄧㄡˋ","ㄎㄜˇ","ㄗㄨㄛˋ","ㄨㄛˇ","ㄩˇ","ㄉㄧˋ","ㄌㄧˋ","ㄩㄝ","˙ㄉㄜ","ㄐㄧˋ","ㄏㄠˋ","˙ㄌㄜ",""]],[["ㄇㄚˇ","ㄘㄠˊ","ㄌㄧˇ","˙ㄉㄜ","ㄧㄝˊ","ㄙㄨ"],["ㄧㄣ","ㄐㄧㄣ","ㄊㄧㄢ","ㄗㄞˋ","ㄉㄚˋ","ㄨㄟˋ","˙ㄉㄜ","ㄔㄥˊ","ㄌㄧˇ","","ㄨㄟˋ","ㄋㄧˇ","˙ㄇㄣ","ㄕㄥ","˙ㄌㄜ","ㄐㄧㄡˋ","ㄓㄨˇ","","ㄐㄧㄡˋ","ㄕˋ","ㄓㄨˇ","ㄐㄧ","ㄉㄨ",""]],[["ㄩㄝ","ㄋㄚˊ","ㄩˇ","ㄉㄚˋ","ㄩˊ"],["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄈㄣ","ㄈㄨˋ","ㄩˊ","","ㄩˊ","ㄐㄧㄡˋ","ㄅㄚˇ","ㄩㄝ","ㄋㄚˊ","ㄊㄨˇ","ㄗㄞˋ","ㄏㄢˋ","ㄉㄧˋ","ㄕㄤˋ",""]],[["ㄇㄨˋ","ㄧㄤˊ","˙ㄉㄜ","ㄉㄚˋ","ㄨㄟˋ"],["ㄧㄝˊ","ㄏㄜˊ","ㄏㄨㄚˊ","ㄕˋ","ㄨㄛˇ","˙ㄉㄜ","ㄇㄨˋ","ㄓㄜˇ","","ㄨㄛˇ","ㄅㄧˋ","ㄅㄨˋ","ㄓˋ","ㄑㄩㄝ","ㄈㄚˊ",""]]],"ui":[["ㄓㄠˇ","ㄉㄠˋ","˙ㄌㄜ",""],["ㄊㄨˊ","ㄏㄠˇ","˙ㄌㄜ","˙ㄇㄚ",""]]}};
+const MAZES=GAMEDATA.MAZES, PICS=GAMEDATA.PICS, GZ=GAMEDATA.GZ;
+const GAME={open:false,tab:"maze"};
+const gameEl=document.getElementById("game");
+let gameZy=zyOn;
+const ZG=(t,a)=>{ if(!gameZy||!a) return esc(t); return [...t].map((c,i)=>a[i]?`<span class="zc">${esc(c)}${zf(a[i])}</span>`:esc(c)).join(""); };
+function sayText(t){ if(!canSpeak) return; if(TTS.on) stopRead(); speechSynthesis.cancel();
+  (t.match(/[^。！？；]+[。！？；」』]*/g)||[t]).forEach(x=>{ x=x.replace(/[「」『』]/g," ").trim(); if(!x) return; const u=new SpeechSynthesisUtterance(x); u.lang=TTS.voice?TTS.voice.lang:"zh-TW"; if(TTS.voice) u.voice=TTS.voice; u.rate=TTS.rate; u.pitch=1.05; speechSynthesis.speak(u); }); }
+const lsGet=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } };
+const lsSet=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+function openGame(tab){ GAME.open=true; gameEl.hidden=false; if(TTS.on) stopRead(); stopPlay(); setTab(tab||GAME.tab); document.getElementById("gameClose").focus(); }
+function closeGame(){ GAME.open=false; gameEl.hidden=true; try{ if(canSpeak) speechSynthesis.cancel(); }catch(e){} document.getElementById("gameBtn").focus(); }
+document.getElementById("gameBtn").addEventListener("click",()=>openGame());
+document.getElementById("gameClose").addEventListener("click",closeGame);
+gameEl.addEventListener("click",e=>{ if(e.target===gameEl) closeGame(); });
+function setTab(t){ GAME.tab=t; document.querySelectorAll("[data-gtab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.gtab===t));
+  document.getElementById("gMaze").hidden=t!=="maze"; document.getElementById("gColor").hidden=t!=="color";
+  if(t==="maze") drawMaze(); else renderPic(); }
+document.querySelectorAll("[data-gtab]").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.gtab)));
+const gameZyBtn=document.getElementById("gameZy");
+function syncGameZy(){ gameZyBtn.setAttribute("aria-pressed",gameZy); gameEl.classList.toggle("zy",gameZy); }
+gameZyBtn.addEventListener("click",()=>{ gameZy=!gameZy; syncGameZy(); renderMazeSide(); if(!document.getElementById("gWin").hidden) showWin(); renderPicSide(); });
+syncGameZy();
+
+/* 迷宮 */
+const cv=document.getElementById("mazeCv"), cx=cv.getContext("2d");
+const MZ={lv:0,n:7,walls:null,pos:[0,0],steps:0,trail:[],won:false,cell:40,pad:10};
+let mzDone=lsGet("grace-maze",[]);
+function genMaze(n){ const W=[]; for(let y=0;y<n;y++){ W.push([]); for(let x=0;x<n;x++) W[y].push({n:1,e:1,s:1,w:1,v:0}); }
+  const st=[[0,0]]; W[0][0].v=1; const D=[[0,-1,"n","s"],[1,0,"e","w"],[0,1,"s","n"],[-1,0,"w","e"]];
+  while(st.length){ const [x,y]=st[st.length-1]; const opts=D.filter(([dx,dy])=>{ const X=x+dx,Y=y+dy; return X>=0&&Y>=0&&X<n&&Y<n&&!W[Y][X].v; });
+    if(!opts.length){ st.pop(); continue; } const [dx,dy,a,b]=opts[Math.floor(Math.random()*opts.length)]; W[y][x][a]=0; W[y+dy][x+dx][b]=0; W[y+dy][x+dx].v=1; st.push([x+dx,y+dy]); }
+  return W; }
+function loadLevel(i){ MZ.lv=i; const L=MAZES[i]; MZ.n=L.n; MZ.walls=genMaze(L.n); MZ.pos=[0,0]; MZ.steps=0; MZ.trail=[[0,0]]; MZ.won=false;
+  document.getElementById("gWin").hidden=true; renderMazeSide(); sizeMaze(); drawMaze(); }
+function renderMazeSide(){ const L=MAZES[MZ.lv];
+  document.getElementById("gTask").innerHTML=`${ZG(L.name,GZ.mz[MZ.lv][0])}<small>${ZG(L.task,GZ.mz[MZ.lv][1])}</small>`;
+  document.getElementById("gSteps").textContent=MZ.steps; document.getElementById("gDone").textContent=mzDone.length;
+  document.getElementById("gLevels").innerHTML=MAZES.map((m,i)=>`<button class="glv" data-lv="${i}" aria-pressed="${i===MZ.lv}"><span class="lvn">${i+1}</span>${esc(m.name)}<em>${mzDone.includes(i)?"完成":m.n+"×"+m.n}</em></button>`).join(""); }
+document.getElementById("gLevels").addEventListener("click",e=>{ const b=e.target.closest("[data-lv]"); if(b) loadLevel(+b.dataset.lv); });
+document.getElementById("gNew").addEventListener("click",()=>loadLevel(MZ.lv));
+function sizeMaze(){ const st=cv.parentElement; const w=Math.max(220,Math.min(st.clientWidth||560,620));
+  const body=gameEl.querySelector(".game-body"), br=body.getBoundingClientRect(), top=cv.getBoundingClientRect().top-br.top+body.scrollTop;
+  const pad=getComputedStyle(gameEl.querySelector(".dpad")).display!=="none"?150:28; const hAvail=Math.max(240,body.clientHeight-top-pad);
+  const S=Math.floor(Math.min(w,hAvail)); const dpr=Math.min(devicePixelRatio||1,2);
+  cv.style.width=S+"px"; cv.style.height=S+"px"; cv.width=S*dpr; cv.height=S*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+  MZ.pad=Math.round(S*.03); MZ.cell=(S-MZ.pad*2)/MZ.n; MZ.S=S; }
+addEventListener("resize",()=>{ if(GAME.open&&GAME.tab==="maze"){ sizeMaze(); drawMaze(); } });
+function cc(x,y){ return [MZ.pad+(x+.5)*MZ.cell, MZ.pad+(y+.5)*MZ.cell]; }
+function rr(x,y,w,h,r){ cx.beginPath(); cx.moveTo(x+r,y); cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r); cx.arcTo(x,y+h,x,y,r); cx.arcTo(x,y,x+w,y,r); cx.closePath(); }
+const INK="#2c2a3a";
+function figure(kind,x,y,s){ cx.save(); cx.translate(x,y); cx.lineWidth=Math.max(1.5,s*.06); cx.strokeStyle=INK; cx.lineJoin="round"; cx.lineCap="round";
+  const circ=(X,Y,r,f)=>{ cx.beginPath(); cx.arc(X,Y,r,0,Math.PI*2); cx.fillStyle=f; cx.fill(); cx.stroke(); };
+  const robe=(f)=>{ cx.beginPath(); cx.moveTo(-s*.22,-s*.02); cx.lineTo(s*.22,-s*.02); cx.lineTo(s*.3,s*.36); cx.lineTo(-s*.3,s*.36); cx.closePath(); cx.fillStyle=f; cx.fill(); cx.stroke(); };
+  if(kind==="sheep"){ cx.fillStyle=INK; [-.16,.1].forEach(a=>cx.fillRect(a*s,s*.12,s*.06,s*.2)); cx.beginPath(); cx.ellipse(-s*.04,0,s*.3,s*.22,0,0,7); cx.fillStyle="#fff"; cx.fill(); cx.stroke(); circ(s*.27,-s*.08,s*.13,INK); cx.fillStyle="#fff"; cx.beginPath(); cx.arc(s*.3,-s*.1,s*.03,0,7); cx.fill(); }
+  else if(kind==="lion"){ for(let i=0;i<10;i++){ const a=i/10*Math.PI*2; circ(Math.cos(a)*s*.22,Math.sin(a)*s*.22-s*.02,s*.11,"#e08a3c"); } circ(0,-s*.02,s*.22,"#f2c461"); cx.fillStyle=INK; cx.beginPath(); cx.arc(-s*.07,-s*.06,s*.03,0,7); cx.arc(s*.07,-s*.06,s*.03,0,7); cx.fill(); }
+  else if(kind==="walker"){ robe("#5b9fe0"); circ(0,-s*.17,s*.14,"#f0d0ae"); }
+  else if(kind==="magi"){ robe("#9c89d9"); circ(0,-s*.16,s*.13,"#d9a876"); cx.beginPath(); cx.moveTo(-s*.14,-s*.27); cx.lineTo(-s*.14,-s*.4); cx.lineTo(-s*.07,-s*.32); cx.lineTo(0,-s*.42); cx.lineTo(s*.07,-s*.32); cx.lineTo(s*.14,-s*.4); cx.lineTo(s*.14,-s*.27); cx.closePath(); cx.fillStyle="#f4bd3c"; cx.fill(); cx.stroke(); }
+  else if(kind==="zac"){ cx.scale(.85,.85); robe("#6fc39b"); circ(0,-s*.17,s*.14,"#f0d0ae"); }
+  else if(kind==="shepherd"){ robe("#b47c4e"); circ(0,-s*.17,s*.14,"#f0d0ae"); cx.beginPath(); cx.moveTo(s*.34,s*.36); cx.lineTo(s*.34,-s*.3); cx.arc(s*.26,-s*.3,s*.08,0,Math.PI,true); cx.lineWidth=Math.max(2,s*.07); cx.strokeStyle="#7a5232"; cx.stroke(); }
+  else if(kind==="ark"){ cx.beginPath(); cx.moveTo(-s*.42,0); cx.lineTo(s*.42,0); cx.lineTo(s*.3,s*.28); cx.lineTo(-s*.3,s*.28); cx.closePath(); cx.fillStyle="#b47c4e"; cx.fill(); cx.stroke();
+    cx.fillStyle="#e6b97a"; cx.fillRect(-s*.2,-s*.2,s*.4,s*.2); cx.strokeRect(-s*.2,-s*.2,s*.4,s*.2); cx.beginPath(); cx.moveTo(-s*.26,-s*.2); cx.lineTo(0,-s*.38); cx.lineTo(s*.26,-s*.2); cx.closePath(); cx.fillStyle="#8a4f3a"; cx.fill(); cx.stroke(); }
+  else if(kind==="land"){ cx.beginPath(); cx.arc(0,s*.3,s*.42,Math.PI,0); cx.closePath(); cx.fillStyle="#7fc06b"; cx.fill(); cx.stroke(); cx.beginPath(); cx.moveTo(0,s*.0); cx.lineTo(0,-s*.34); cx.strokeStyle="#7a5232"; cx.lineWidth=Math.max(2,s*.06); cx.stroke(); cx.strokeStyle=INK; cx.lineWidth=Math.max(1.5,s*.05); cx.beginPath(); cx.moveTo(0,-s*.34); cx.lineTo(s*.26,-s*.26); cx.lineTo(0,-s*.18); cx.closePath(); cx.fillStyle="#e86a57"; cx.fill(); cx.stroke(); }
+  else if(kind==="manger"){ cx.beginPath(); cx.moveTo(-s*.3,s*.02); cx.lineTo(s*.3,s*.02); cx.lineTo(s*.22,s*.26); cx.lineTo(-s*.22,s*.26); cx.closePath(); cx.fillStyle="#c99a5a"; cx.fill(); cx.stroke(); circ(-s*.1,-s*.02,s*.08,"#f0d0ae"); cx.beginPath(); cx.ellipse(s*.05,0,s*.16,s*.07,0,0,7); cx.fillStyle="#fff"; cx.fill(); cx.stroke();
+    star(0,-s*.32,s*.16,s*.07); }
+  else if(kind==="tree"){ cx.fillStyle="#8a5a3a"; cx.fillRect(-s*.06,-s*.05,s*.12,s*.4); cx.strokeRect(-s*.06,-s*.05,s*.12,s*.4); circ(0,-s*.18,s*.28,"#4f9a5c"); circ(s*.32,s*.14,s*.1,"#f0d0ae"); cx.beginPath(); cx.moveTo(s*.24,s*.24); cx.lineTo(s*.4,s*.24); cx.lineTo(s*.44,s*.4); cx.lineTo(s*.2,s*.4); cx.closePath(); cx.fillStyle="#fff"; cx.fill(); cx.stroke(); }
+  function star(X,Y,R,r){ cx.beginPath(); for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, q=i%2?r:R; cx.lineTo(X+Math.cos(a)*q,Y+Math.sin(a)*q); } cx.closePath(); cx.fillStyle="#f4bd3c"; cx.fill(); cx.stroke(); }
+  cx.restore(); }
+function drawMaze(){ if(!MZ.walls){ loadLevel(Math.min(mzDone.length,MAZES.length-1)); return; } const L=MAZES[MZ.lv], n=MZ.n, c=MZ.cell, P=MZ.pad, S=MZ.S;
+  cx.clearRect(0,0,S,S); rr(0,0,S,S,12); cx.fillStyle=L.floor; cx.fill();
+  if(L.player==="walker"){ cx.save(); cx.globalAlpha=.25; for(let y=0;y<S;y+=14){ cx.beginPath(); for(let x=0;x<=S;x+=8) cx.lineTo(x,y+Math.sin(x*.08)*2); cx.strokeStyle="#3d8fc4"; cx.lineWidth=1; cx.stroke(); } cx.restore(); }
+  // trail
+  cx.fillStyle=L.wall; cx.globalAlpha=.28; MZ.trail.forEach(([x,y])=>{ const [X,Y]=cc(x,y); cx.beginPath(); cx.arc(X,Y,c*.1,0,7); cx.fill(); }); cx.globalAlpha=1;
+  // goal glow
+  const [gx,gy]=cc(n-1,n-1); const gr=cx.createRadialGradient(gx,gy,0,gx,gy,c*.8); gr.addColorStop(0,"rgba(255,213,106,.75)"); gr.addColorStop(1,"rgba(255,213,106,0)"); cx.fillStyle=gr; cx.fillRect(gx-c,gy-c,c*2,c*2);
+  // walls
+  cx.strokeStyle=L.wall; cx.lineWidth=Math.max(3,c*.14); cx.lineCap="round"; cx.beginPath();
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++){ const w=MZ.walls[y][x], X=P+x*c, Y=P+y*c;
+    if(w.n){ cx.moveTo(X,Y); cx.lineTo(X+c,Y); } if(w.w){ cx.moveTo(X,Y); cx.lineTo(X,Y+c); }
+    if(y===n-1&&w.s){ cx.moveTo(X,Y+c); cx.lineTo(X+c,Y+c); } if(x===n-1&&w.e){ cx.moveTo(X+c,Y); cx.lineTo(X+c,Y+c); } }
+  cx.stroke();
+  figure(L.goal,gx,gy,c*.95);
+  const [px,py]=cc(MZ.pos[0],MZ.pos[1]); figure(L.player,px,py+(MZ.won?0:0),c*.9); }
+function canGo(x,y,d){ const w=MZ.walls[y][x]; return !w[d]; }
+const DIRS2={up:[0,-1,"n"],down:[0,1,"s"],left:[-1,0,"w"],right:[1,0,"e"]};
+function move(d){ if(MZ.won||!GAME.open) return; const [dx,dy,k]=DIRS2[d]; const [x,y]=MZ.pos; if(!canGo(x,y,k)) return;
+  MZ.pos=[x+dx,y+dy]; MZ.steps++; const last=MZ.trail[MZ.trail.length-2];
+  if(last&&last[0]===MZ.pos[0]&&last[1]===MZ.pos[1]) MZ.trail.pop(); else MZ.trail.push([...MZ.pos]);
+  document.getElementById("gSteps").textContent=MZ.steps; drawMaze();
+  if(MZ.pos[0]===MZ.n-1&&MZ.pos[1]===MZ.n-1) win(); }
+function win(){ MZ.won=true; if(!mzDone.includes(MZ.lv)){ mzDone.push(MZ.lv); lsSet("grace-maze",mzDone); } renderMazeSide(); showWin(); }
+function showWin(){ const L=MAZES[MZ.lv], w=document.getElementById("gWin"); const nx=MZ.lv<MAZES.length-1;
+  w.innerHTML=`<h3>${ZG("找到了！",GZ.ui[0])}</h3><blockquote>${ZG(L.v,GZ.mz[MZ.lv][2])}</blockquote><span class="src">${esc(L.ref)}・和合本・走了 ${MZ.steps} 步</span>
+   <div class="actions">${canSpeak?`<button class="btn" data-gsay>唸金句</button>`:""}<button class="btn" data-gstory="${L.story}">看這則故事</button>${nx?`<button class="btn primary" data-gnext>下一關 →</button>`:`<button class="btn primary" data-gagain>再玩一次</button>`}</div>`;
+  w.hidden=false; }
+document.getElementById("gWin").addEventListener("click",e=>{ const L=MAZES[MZ.lv];
+  if(e.target.closest("[data-gsay]")) sayText(L.v+"。"+sayRef(L.ref));
+  else if(e.target.closest("[data-gstory]")){ closeGame(); selectStory(L.story); }
+  else if(e.target.closest("[data-gnext]")) loadLevel(MZ.lv+1);
+  else if(e.target.closest("[data-gagain]")) loadLevel(0); });
+addEventListener("keydown",e=>{ if(!GAME.open) return; if(e.key==="Escape"){ closeGame(); return; } if(GAME.tab!=="maze") return;
+  const k={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right",w:"up",s:"down",a:"left",d:"right",W:"up",S:"down",A:"left",D:"right"}[e.key];
+  if(k&&!e.target.closest("input")){ e.preventDefault(); move(k); } });
+document.querySelectorAll(".dpad [data-d]").forEach(b=>{ let t=null; const go=()=>move(b.dataset.d);
+  b.addEventListener("pointerdown",e=>{ e.preventDefault(); go(); clearInterval(t); t=setInterval(go,180); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>clearInterval(t))); });
+let drag=null;
+function cellAt(e){ const r=cv.getBoundingClientRect(); const x=Math.floor((e.clientX-r.left-MZ.pad)/MZ.cell), y=Math.floor((e.clientY-r.top-MZ.pad)/MZ.cell); return [x,y]; }
+cv.addEventListener("pointerdown",e=>{ cv.setPointerCapture(e.pointerId); const [x,y]=cellAt(e); drag={sx:e.clientX,sy:e.clientY,follow:x===MZ.pos[0]&&y===MZ.pos[1]}; });
+cv.addEventListener("pointermove",e=>{ if(!drag||!drag.follow) return; const [x,y]=cellAt(e); const [px,py]=MZ.pos; const dx=x-px, dy=y-py;
+  if(Math.abs(dx)+Math.abs(dy)===1) move(dx===1?"right":dx===-1?"left":dy===1?"down":"up"); });
+cv.addEventListener("pointerup",e=>{ if(!drag) return; if(!drag.follow){ const dx=e.clientX-drag.sx, dy=e.clientY-drag.sy; if(Math.max(Math.abs(dx),Math.abs(dy))>24){ move(Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up")); } } drag=null; });
+
+/* 塗色本 */
+const PAL=["#e86a57","#f08a4b","#f4bd3c","#f6e27a","#8cc66d","#4f9a5c","#7fd0e0","#5b9fe0","#3b5ba5","#9c89d9","#ef8fb0","#b47c4e","#f0d0ae","#8a8a8a","#2c2a3a","#ffffff"];
+const STK='stroke="#2c2a3a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+const rb=(R,r,cy)=>`M${200-R} ${cy} A${R} ${R} 0 0 1 ${200+R} ${cy} L${200+r} ${cy} A${r} ${r} 0 0 0 ${200-r} ${cy}Z`;
+const starPts=(X,Y,R,r)=>Array.from({length:10},(_,i)=>{ const a=-Math.PI/2+i*Math.PI/5, q=i%2?r:R; return (X+Math.cos(a)*q).toFixed(1)+","+(Y+Math.sin(a)*q).toFixed(1); }).join(" ");
+const PICSVG=[
+ // 挪亞方舟
+ [`<rect x="0" y="0" width="400" height="300"/>`,`<circle cx="340" cy="52" r="26"/>`,
+  `<path d="${rb(150,136,212)}"/>`,`<path d="${rb(136,122,212)}"/>`,`<path d="${rb(122,108,212)}"/>`,`<path d="${rb(108,94,212)}"/>`,`<path d="${rb(94,80,212)}"/>`,
+  `<path d="M120 212 A80 80 0 0 1 280 212Z"/>`,`<ellipse cx="62" cy="78" rx="38" ry="16"/>`,`<ellipse cx="88" cy="66" rx="26" ry="18"/>`,
+  `<path d="M0 205 Q25 192 50 205 T100 205 T150 205 T200 205 T250 205 T300 205 T350 205 T400 205 V300 H0Z"/>`,
+  `<path d="M88 188 L312 188 L288 238 L112 238Z"/>`,`<rect x="140" y="146" width="120" height="42"/>`,`<polygon points="128,148 200,112 272,148"/>`,
+  `<circle cx="170" cy="166" r="9"/>`,`<circle cx="200" cy="166" r="9"/>`,`<circle cx="230" cy="166" r="9"/>`,
+  `<ellipse cx="332" cy="128" rx="17" ry="10"/>`,`<path d="M326 124 L340 104 L346 126Z"/>`,
+  `<path d="M0 262 Q40 252 80 262 T160 262 T240 262 T320 262 T400 262 V300 H0Z"/>`],
+ // 馬槽
+ [`<rect x="0" y="0" width="400" height="300"/>`,`<polygon points="${starPts(200,48,28,12)}"/>`,`<circle cx="70" cy="40" r="4"/>`,`<circle cx="330" cy="60" r="4"/>`,`<circle cx="300" cy="28" r="3"/>`,
+  `<path d="M0 232 Q100 192 200 216 T400 222 V300 H0Z"/>`,`<rect x="112" y="132" width="176" height="104"/>`,`<polygon points="94,138 200,78 306,138"/>`,
+  `<rect x="112" y="132" width="14" height="104"/>`,`<rect x="274" y="132" width="14" height="104"/>`,
+  `<path d="M160 226 L170 213 L180 225 L190 211 L200 224 L210 211 L220 225 L230 213 L240 226Z"/>`,`<ellipse cx="203" cy="216" rx="25" ry="10"/>`,`<circle cx="182" cy="211" r="9"/>`,
+  `<path d="M158 226 L242 226 L232 256 L168 256Z"/>`,`<rect x="170" y="256" width="9" height="18"/>`,`<rect x="221" y="256" width="9" height="18"/>`,
+  `<ellipse cx="332" cy="252" rx="27" ry="18"/>`,`<ellipse cx="360" cy="244" rx="10" ry="9"/>`,`<rect x="314" y="266" width="7" height="14"/>`,`<rect x="342" y="266" width="7" height="14"/>`],
+ // 約拿與大魚
+ [`<rect x="0" y="0" width="400" height="300"/>`,`<circle cx="62" cy="52" r="24"/>`,`<ellipse cx="300" cy="50" rx="40" ry="15"/>`,`<ellipse cx="326" cy="40" rx="26" ry="16"/>`,
+  `<path d="M0 150 Q25 140 50 150 T100 150 T150 150 T200 150 T250 150 T300 150 T350 150 T400 150 V300 H0Z"/>`,
+  `<path d="M0 300 V250 Q55 236 120 256 Q130 270 120 300Z"/>`,
+  `<path d="M150 196 Q215 128 312 172 Q330 182 320 202 Q276 250 196 238 Q156 230 150 196Z"/>`,`<path d="M316 186 L372 150 L362 196 L378 236Z"/>`,
+  `<path d="M232 220 Q240 250 262 244Z"/>`,`<circle cx="190" cy="190" r="9"/>`,`<circle cx="190" cy="190" r="4"/>`,
+  `<ellipse cx="226" cy="124" rx="7" ry="11"/>`,`<ellipse cx="208" cy="112" rx="6" ry="9"/>`,`<ellipse cx="244" cy="110" rx="6" ry="9"/>`,
+  `<path d="M48 246 L72 246 L78 276 L42 276Z"/>`,`<circle cx="60" cy="234" r="11"/>`,`<circle cx="356" cy="262" r="7"/>`,`<circle cx="340" cy="280" r="5"/>`],
+ // 牧羊的大衛
+ [`<rect x="0" y="0" width="400" height="300"/>`,`<circle cx="340" cy="50" r="24"/>`,`<ellipse cx="90" cy="50" rx="40" ry="15"/>`,`<ellipse cx="116" cy="40" rx="26" ry="16"/>`,
+  `<path d="M0 190 Q90 140 200 180 T400 170 V300 H0Z"/>`,`<path d="M0 238 Q120 210 230 236 T400 230 V300 H0Z"/>`,
+  `<rect x="44" y="150" width="16" height="64"/>`,`<circle cx="52" cy="140" r="34"/>`,
+  `<path d="M126 268 L150 182 L174 182 L198 268Z"/>`,`<circle cx="162" cy="168" r="15"/>`,`<rect x="146" y="156" width="32" height="7"/>`,
+  `<path d="M206 270 L206 150 Q206 134 220 134 Q232 134 232 148 L224 148 Q224 142 220 142 Q214 142 214 150 L214 270Z"/>`,
+  `<ellipse cx="290" cy="246" rx="34" ry="22"/>`,`<ellipse cx="324" cy="236" rx="12" ry="11"/>`,`<rect x="270" y="262" width="7" height="16"/>`,`<rect x="302" y="262" width="7" height="16"/>`,
+  `<ellipse cx="360" cy="196" rx="20" ry="13"/>`,`<ellipse cx="380" cy="190" rx="8" ry="7"/>`,
+  `<circle cx="96" cy="262" r="7"/>`,`<circle cx="110" cy="276" r="7"/>`,`<circle cx="372" cy="272" r="7"/>`]
+];
+const CP={pic:0,color:PAL[7],undo:[]};
+let cFills=lsGet("grace-color",{});
+function renderPic(){ const i=CP.pic, f=cFills[i]||{};
+  document.getElementById("cStage").innerHTML=`<svg viewBox="0 0 400 300" role="img" aria-label="${esc(PICS[i].name)}塗色圖" ${STK}>${PICSVG[i].map((el,k)=>el.replace(/^<(\w+)/,`<$1 class="cr" data-k="${k}" fill="${f[k]||"#ffffff"}"`)).join("")}</svg>`;
+  renderPicSide(); }
+function renderPicSide(){ const i=CP.pic, P=PICS[i];
+  document.getElementById("cVerse").innerHTML=`${ZG(P.v,GZ.cp[i][1])}<small>${esc(P.ref)}・和合本・${esc(P.name)}</small>`;
+  document.getElementById("cPics").innerHTML=PICS.map((p,k)=>`<button class="glv" data-pic="${k}" aria-pressed="${k===i}"><span class="lvn">${k+1}</span>${esc(p.name)}</button>`).join("");
+  document.getElementById("cPal").innerHTML=PAL.map(c=>`<button class="sw ${c==="#ffffff"?"eraser":""}" data-c="${c}" style="background-color:${c==="#ffffff"?"":c}" aria-label="${c==="#ffffff"?"橡皮擦（白色）":"顏色 "+c}" aria-pressed="${c===CP.color}"></button>`).join(""); }
+document.getElementById("cPics").addEventListener("click",e=>{ const b=e.target.closest("[data-pic]"); if(b){ CP.pic=+b.dataset.pic; CP.undo=[]; renderPic(); } });
+document.getElementById("cPal").addEventListener("click",e=>{ const b=e.target.closest("[data-c]"); if(!b) return; CP.color=b.dataset.c; document.querySelectorAll("#cPal .sw").forEach(x=>x.setAttribute("aria-pressed",x===b)); });
+document.getElementById("cStage").addEventListener("click",e=>{ const r=e.target.closest(".cr"); if(!r) return; const k=r.dataset.k, prev=r.getAttribute("fill");
+  if(prev===CP.color) return; CP.undo.push([k,prev]); r.setAttribute("fill",CP.color); (cFills[CP.pic]=cFills[CP.pic]||{})[k]=CP.color; lsSet("grace-color",cFills); });
+document.getElementById("cUndo").addEventListener("click",()=>{ const u=CP.undo.pop(); if(!u) return; const el=document.querySelector(`#cStage .cr[data-k="${u[0]}"]`); if(el) el.setAttribute("fill",u[1]); (cFills[CP.pic]=cFills[CP.pic]||{})[u[0]]=u[1]; lsSet("grace-color",cFills); });
+const cClear=document.getElementById("cClear");
+cClear.addEventListener("click",()=>{ if(cClear.dataset.sure!=="1"){ cClear.dataset.sure="1"; cClear.textContent="確定清除？"; setTimeout(()=>{ cClear.dataset.sure=""; cClear.textContent="全部清除"; },2500); return; }
+  cClear.dataset.sure=""; cClear.textContent="全部清除"; cFills[CP.pic]={}; lsSet("grace-color",cFills); CP.undo=[]; renderPic(); });
+const canSave=/github\.io$/.test(location.hostname)||location.protocol==="file:";
+const cSave=document.getElementById("cSave"); cSave.hidden=!canSave;
+cSave.addEventListener("click",()=>{ const svg=document.querySelector("#cStage svg"); const x=new XMLSerializer().serializeToString(svg).replace("<svg",'<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900"');
+  const img=new Image(); img.onload=()=>{ const c=document.createElement("canvas"); c.width=1200; c.height=960; const g=c.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,1200,960); g.drawImage(img,0,0,1200,900);
+    g.fillStyle="#2c2a3a"; g.font="28px sans-serif"; g.fillText("恩典島塗色本・"+PICS[CP.pic].name,24,940);
+    const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download="恩典島塗色-"+PICS[CP.pic].name+".png"; document.body.appendChild(a); a.click(); a.remove(); document.getElementById("cMsg").textContent="圖片已存到下載資料夾。"; };
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(x); });
 
 renderHome(); tick(); setInterval(tick,30000);
 frame();
